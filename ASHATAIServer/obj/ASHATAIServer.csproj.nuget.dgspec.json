@@ -25,7 +25,11 @@
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "/home/runner/work/AGP_AISERVER/AGP_AISERVER/Abstractions/Abstractions.csproj": {
+                "projectPath": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/Abstractions/Abstractions.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

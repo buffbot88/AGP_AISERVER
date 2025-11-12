@@ -47,7 +47,7 @@ namespace ASHATAIServer.Services
                             Username = result.User.Username,
                             Email = result.User.Email,
                             Role = result.User.Role,
-                            Message = result.Message
+                            Message = result.Message ?? "Login successful"
                         };
                     }
                 }
@@ -96,7 +96,7 @@ namespace ASHATAIServer.Services
                             Username = result.User.Username,
                             Email = result.User.Email,
                             Role = result.User.Role,
-                            Message = result.Message
+                            Message = result.Message ?? "Registration successful"
                         };
                     }
                 }

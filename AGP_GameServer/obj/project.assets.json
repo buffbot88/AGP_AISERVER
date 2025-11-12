@@ -358,6 +358,16 @@
         "build": {
           "buildTransitive/net8.0/_._": {}
         }
+      },
+      "Abstractions/1.5.0-beta": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/Abstractions.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Abstractions.dll": {}
+        }
       }
     }
   },
@@ -793,10 +803,16 @@
         "system.net.serversentevents.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "Abstractions/1.5.0-beta": {
+      "type": "project",
+      "path": "../Abstractions/Abstractions.csproj",
+      "msbuildProject": "../Abstractions/Abstractions.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Abstractions >= 1.5.0-beta",
       "Microsoft.AspNetCore.Connections.Abstractions >= 9.0.9",
       "Microsoft.AspNetCore.Http.Connections.Client >= 9.0.9",
       "Microsoft.AspNetCore.Http.Connections.Common >= 9.0.9",
@@ -829,7 +845,11 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/home/runner/work/AGP_AISERVER/AGP_AISERVER/Abstractions/Abstractions.csproj": {
+              "projectPath": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/Abstractions/Abstractions.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
