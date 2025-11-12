@@ -1,0 +1,18 @@
+services:
+    ashatos.authbridge.controller.api:
+        class: ashatos\authbridge\controller\api_controller
+        arguments:
+            - '@dbal.conn'
+            - '@user'
+            - '@auth'
+            - '@passwords.manager'
+            - '@request'
+            - '@user_loader'
+            - '@config'
+        tags:
+            - { name: routing.resource }
+    
+    ashatos.authbridge.listener:
+        class: ashatos\authbridge\event\listener
+        tags:
+            - { name: event.listener }

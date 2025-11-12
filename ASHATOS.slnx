@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ASHATAIServer/ASHATAIServer.csproj" />
+  <Project Path="Abstractions/Abstractions.csproj" />
+  <Project Path="AGP_GameServer/LegendaryGameSystem.csproj" />
+</Solution>

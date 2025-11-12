@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{400BF3A6-D576-4543-685D-C0543D4AAD97}|AGP_GameServer\\LegendaryGameSystem.csproj|c:\\users\\buffb\\onedrive\\desktop\\agp_aiserver\\agp_gameserver\\gameclientmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{400BF3A6-D576-4543-685D-C0543D4AAD97}|AGP_GameServer\\LegendaryGameSystem.csproj|solutionrelative:agp_gameserver\\gameclientmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4589D3A-5E32-879B-C951-04D5659798C5}|Abstractions\\Abstractions.csproj|c:\\users\\buffb\\onedrive\\desktop\\agp_aiserver\\abstractions\\abstractions.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B4589D3A-5E32-879B-C951-04D5659798C5}|Abstractions\\Abstractions.csproj|solutionrelative:abstractions\\abstractions.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Abstractions",
+              "DocumentMoniker": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\Abstractions\\Abstractions.csproj",
+              "RelativeDocumentMoniker": "Abstractions\\Abstractions.csproj",
+              "ToolTip": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\Abstractions\\Abstractions.csproj",
+              "RelativeToolTip": "Abstractions\\Abstractions.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-11-12T15:26:18.897Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameClientModule.cs",
+              "DocumentMoniker": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\AGP_GameServer\\GameClientModule.cs",
+              "RelativeDocumentMoniker": "AGP_GameServer\\GameClientModule.cs",
+              "ToolTip": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\AGP_GameServer\\GameClientModule.cs",
+              "RelativeToolTip": "AGP_GameServer\\GameClientModule.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAjwF8AAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-12T15:26:07.647Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

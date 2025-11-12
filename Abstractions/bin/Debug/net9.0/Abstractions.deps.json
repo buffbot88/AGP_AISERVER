@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "Abstractions/1.5.0-beta": {
+        "runtime": {
+          "Abstractions.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Abstractions/1.5.0-beta": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+    "name": "ashatos/authbridge",
+    "type": "phpbb-extension",
+    "description": "ASHATOS Authentication Bridge - Provides REST API endpoints for authentication with the ASHATOS AI Game Server",
+    "homepage": "https://github.com/buffbot88/ASHATOS",
+    "version": "1.0.0",
+    "license": "GPL-2.0-only",
+    "authors": [
+        {
+            "name": "ASHATOS Team",
+            "homepage": "https://github.com/buffbot88/ASHATOS",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "phpbb/phpbb": ">=3.2.0"
+    },
+    "extra": {
+        "display-name": "ASHATOS Authentication Bridge",
+        "soft-require": {
+            "phpbb/phpbb": ">=3.2.0,<4.0.0@dev"
+        }
+    }
+}

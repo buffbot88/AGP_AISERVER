@@ -1,0 +1,6 @@
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.csproj.AssemblyReference.cache
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.AssemblyInfoInputs.cache
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.AssemblyInfo.cs
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.csproj.CoreCompileInputs.cache
+C:\Users\buffb\OneDrive\Desktop\AGP_AISERVER\AGP_GameServer\obj\Debug\net9.0\LegendaryGameSystem.sourcelink.json

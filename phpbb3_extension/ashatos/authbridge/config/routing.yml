@@ -1,0 +1,19 @@
+ashatos_authbridge_api_login:
+    path: /api/auth/login
+    defaults: { _controller: ashatos.authbridge.controller.api:login }
+    methods: [POST]
+
+ashatos_authbridge_api_register:
+    path: /api/auth/register
+    defaults: { _controller: ashatos.authbridge.controller.api:register }
+    methods: [POST]
+
+ashatos_authbridge_api_validate:
+    path: /api/auth/validate
+    defaults: { _controller: ashatos.authbridge.controller.api:validate }
+    methods: [POST]
+
+ashatos_authbridge_api_logout:
+    path: /api/auth/logout
+    defaults: { _controller: ashatos.authbridge.controller.api:logout }
+    methods: [POST]
