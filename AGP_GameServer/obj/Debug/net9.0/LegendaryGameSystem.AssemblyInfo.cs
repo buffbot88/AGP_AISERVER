@@ -17,7 +17,7 @@ using System.Reflection;
     "eployment, and advanced modular game engine with Unreal Engine-inspired features" +
     "."))]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.5.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.5.0-beta+3ef9dd08061eb88804c277b30a815d09ac717dc3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.5.0-beta+bec5881437ba24e2b02c5ca8218a0c702fbae506")]
 [assembly: System.Reflection.AssemblyProductAttribute("LegendaryGameSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LegendaryGameSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.5.0.0")]

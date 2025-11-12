@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ASHATAIServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3ef9dd08061eb88804c277b30a815d09ac717dc3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bec5881437ba24e2b02c5ca8218a0c702fbae506")]
 [assembly: System.Reflection.AssemblyProductAttribute("ASHATAIServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ASHATAIServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

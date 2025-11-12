@@ -905,7 +905,7 @@
     ]
   },
   "packageFolders": {
-    "/home/runner/work/AGP_AISERVER/.codeql-scratch/dbs/csharp/working/packages": {}
+    "/home/runner/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
@@ -913,7 +913,7 @@
       "projectUniqueName": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/ASHATAIServer/ASHATAIServer.csproj",
       "projectName": "ASHATAIServer",
       "projectPath": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/ASHATAIServer/ASHATAIServer.csproj",
-      "packagesPath": "/home/runner/work/AGP_AISERVER/.codeql-scratch/dbs/csharp/working/packages",
+      "packagesPath": "/home/runner/.nuget/packages/",
       "outputPath": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/ASHATAIServer/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
@@ -970,24 +970,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[9.0.10, 9.0.10]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.linux-x64",
-            "version": "[9.0.10, 9.0.10]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[9.0.10, 9.0.10]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[9.0.10, 9.0.10]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"

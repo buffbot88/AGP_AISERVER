@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "vVooszhOGx8=",
+  "dgSpecHash": "/orV1q3XY/4=",
   "success": true,
   "projectFilePath": "/home/runner/work/AGP_AISERVER/AGP_AISERVER/Abstractions/Abstractions.csproj",
-  "expectedPackageFiles": [
-    "/home/runner/work/AGP_AISERVER/.codeql-scratch/dbs/csharp/working/packages/microsoft.netcore.app.ref/9.0.10/microsoft.netcore.app.ref.9.0.10.nupkg.sha512",
-    "/home/runner/work/AGP_AISERVER/.codeql-scratch/dbs/csharp/working/packages/microsoft.windowsdesktop.app.ref/9.0.10/microsoft.windowsdesktop.app.ref.9.0.10.nupkg.sha512",
-    "/home/runner/work/AGP_AISERVER/.codeql-scratch/dbs/csharp/working/packages/microsoft.aspnetcore.app.ref/9.0.10/microsoft.aspnetcore.app.ref.9.0.10.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }
