@@ -1,0 +1,7 @@
+{
+  "ServerUrl": "http://localhost:8088",
+  "ServerPort": 8088,
+  "AppDataPath": "C:\\Users\\{YourUsername}\\AppData\\Roaming\\AGP_IDE",
+  "DraftsPath": "C:\\Users\\{YourUsername}\\AppData\\Roaming\\AGP_IDE\\Drafts",
+  "GamesPath": "C:\\Users\\{YourUsername}\\AppData\\Roaming\\AGP_IDE\\Games"
+}

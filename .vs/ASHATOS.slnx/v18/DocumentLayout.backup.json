@@ -1,12 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{4A6A818A-F19A-CCAF-2418-F955A3270B86}|ASHATAIServer\\ASHATAIServer.csproj|c:\\users\\buffb\\onedrive\\desktop\\agp_aiserver\\ashataiserver\\ashataiserver.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
-      "RelativeMoniker": "D:0:0:{4A6A818A-F19A-CCAF-2418-F955A3270B86}|ASHATAIServer\\ASHATAIServer.csproj|solutionrelative:ashataiserver\\ashataiserver.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -14,23 +9,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ASHATAIServer",
-              "DocumentMoniker": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\ASHATAIServer\\ASHATAIServer.csproj",
-              "RelativeDocumentMoniker": "ASHATAIServer\\ASHATAIServer.csproj",
-              "ToolTip": "C:\\Users\\buffb\\OneDrive\\Desktop\\AGP_AISERVER\\ASHATAIServer\\ASHATAIServer.csproj",
-              "RelativeToolTip": "ASHATAIServer\\ASHATAIServer.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-11-12T15:25:31.617Z",
-              "EditorCaption": ""
             }
           ]
         }
