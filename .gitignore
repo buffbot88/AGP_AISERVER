@@ -41,3 +41,7 @@ artifacts/
 # Temporary files
 /tmp/
 *.tmp
+
+# Built files
+**/bin/
+**/obj/
