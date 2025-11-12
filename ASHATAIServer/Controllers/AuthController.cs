@@ -30,7 +30,8 @@ namespace ASHATAIServer.Controllers
                 {
                     success = true,
                     message = result.Message,
-                    sessionId = result.SessionId,
+                    token = result.SessionId,  // AGP Studios IDE expects 'token' field
+                    sessionId = result.SessionId,  // Keep for backward compatibility
                     user = new
                     {
                         id = result.UserId,
@@ -63,7 +64,8 @@ namespace ASHATAIServer.Controllers
                 {
                     success = true,
                     message = result.Message,
-                    sessionId = result.SessionId,
+                    token = result.SessionId,  // AGP Studios IDE expects 'token' field
+                    sessionId = result.SessionId,  // Keep for backward compatibility
                     user = new
                     {
                         id = result.UserId,
