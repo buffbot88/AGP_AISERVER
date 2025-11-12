@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Abstractions library for AGP Game Server - Contains base interfaces and models")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.5.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.5.0-beta+a3f333a8377cb5f9b7307e6dbdf91c86619dbeb2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.5.0-beta+3ef9dd08061eb88804c277b30a815d09ac717dc3")]
 [assembly: System.Reflection.AssemblyProductAttribute("Abstractions")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Abstractions")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.5.0.0")]
