@@ -5,13 +5,13 @@ using AGP_Studios.IDE.Models;
 namespace AGP_Studios.IDE.UI.Windows;
 
 /// <summary>
-/// Login window for user authentication
+/// Registration window for new user sign-up
 /// </summary>
-public partial class LoginWindow : Window
+public partial class RegisterWindow : Window
 {
     private readonly ApiClient _apiClient;
     
-    public LoginWindow()
+    public RegisterWindow()
     {
         InitializeComponent();
         _apiClient = new ApiClient();
@@ -20,16 +20,49 @@ public partial class LoginWindow : Window
         ServerUrlTextBox.Text = ConfigurationManager.Instance.GetFullServerUrl();
     }
     
-    private async void LoginButton_Click(object sender, RoutedEventArgs e)
+    private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
         var username = UsernameTextBox.Text.Trim();
+        var email = EmailTextBox.Text.Trim();
         var password = PasswordBox.Password;
+        var confirmPassword = ConfirmPasswordBox.Password;
         var serverUrl = ServerUrlTextBox.Text.Trim();
         
         // Validate input
-        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(username))
         {
-            ShowStatus("Please enter both username and password.", true);
+            ShowStatus("Please enter a username.", true);
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(email))
+        {
+            ShowStatus("Please enter an email address.", true);
+            return;
+        }
+        
+        // Basic email validation
+        if (!email.Contains("@") || !email.Contains("."))
+        {
+            ShowStatus("Please enter a valid email address.", true);
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(password))
+        {
+            ShowStatus("Please enter a password.", true);
+            return;
+        }
+        
+        if (password.Length < 6)
+        {
+            ShowStatus("Password must be at least 6 characters long.", true);
+            return;
+        }
+        
+        if (password != confirmPassword)
+        {
+            ShowStatus("Passwords do not match.", true);
             return;
         }
         
@@ -40,20 +73,20 @@ public partial class LoginWindow : Window
             ConfigurationManager.Instance.SaveConfiguration();
         }
         
-        // Disable login button during authentication
-        LoginButton.IsEnabled = false;
-        LoginButton.Content = "Signing in...";
-        ShowStatus("Authenticating...", false);
+        // Disable register button during registration
+        RegisterButton.IsEnabled = false;
+        RegisterButton.Content = "Creating account...";
+        ShowStatus("Creating your account...", false);
         
         try
         {
-            // Attempt login
-            var loginResponse = await _apiClient.LoginAsync(username, password);
+            // Attempt registration
+            var registerResponse = await _apiClient.RegisterAsync(username, email, password);
             
-            if (loginResponse.Success && !string.IsNullOrEmpty(loginResponse.Token))
+            if (registerResponse.Success && !string.IsNullOrEmpty(registerResponse.Token))
             {
                 // Set authentication token
-                _apiClient.SetAuthToken(loginResponse.Token);
+                _apiClient.SetAuthToken(registerResponse.Token);
                 
                 // Get user info to check admin status
                 var userInfo = await _apiClient.GetUserInfoAsync();
@@ -67,13 +100,13 @@ public partial class LoginWindow : Window
                         Username = userInfo.Username,
                         Email = userInfo.Email,
                         IsAdmin = userInfo.IsAdmin,
-                        Token = loginResponse.Token
+                        Token = registerResponse.Token
                     };
                     
                     // Save session for auto-login
                     var sessionData = new SessionData
                     {
-                        Token = loginResponse.Token,
+                        Token = registerResponse.Token,
                         UserId = user.Id,
                         Username = user.Username,
                         Email = user.Email,
@@ -94,26 +127,33 @@ public partial class LoginWindow : Window
                         gameLibrary.Show();
                     }
                     
-                    // Close login window
+                    // Close registration window
                     Close();
                 }
                 else
                 {
-                    ShowStatus("Failed to retrieve user information.", true);
-                    ResetLoginButton();
+                    ShowStatus("Registration successful but failed to retrieve user information.", true);
+                    ResetRegisterButton();
                 }
             }
             else
             {
-                ShowStatus(loginResponse.Message ?? "Login failed. Please check your credentials.", true);
-                ResetLoginButton();
+                ShowStatus(registerResponse.Message ?? "Registration failed. Please try again.", true);
+                ResetRegisterButton();
             }
         }
         catch (Exception ex)
         {
             ShowStatus($"Connection error: {ex.Message}", true);
-            ResetLoginButton();
+            ResetRegisterButton();
         }
+    }
+    
+    private void BackToLoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        var loginWindow = new LoginWindow();
+        loginWindow.Show();
+        Close();
     }
     
     private void ShowStatus(string message, bool isError)
@@ -124,16 +164,9 @@ public partial class LoginWindow : Window
         StatusTextBlock.Visibility = Visibility.Visible;
     }
     
-    private void ResetLoginButton()
+    private void ResetRegisterButton()
     {
-        LoginButton.IsEnabled = true;
-        LoginButton.Content = "Sign In";
-    }
-    
-    private void RegisterLinkButton_Click(object sender, RoutedEventArgs e)
-    {
-        var registerWindow = new RegisterWindow();
-        registerWindow.Show();
-        Close();
+        RegisterButton.IsEnabled = true;
+        RegisterButton.Content = "Create Account";
     }
 }
