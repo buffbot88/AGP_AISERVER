@@ -228,6 +228,47 @@ The changes maintain full backward compatibility:
    - Extension routes must be configured
    - Database connection must be working
 
+### Common Error Messages
+
+**"Authentication service is temporarily unavailable. Please try again later."**
+- Cause: phpBB3 backend is returning HTTP 500+ errors
+- Solution: Check phpBB3 server logs, ensure phpBB3 is running and accessible
+- Check: `appsettings.json` has correct `PhpBBBaseUrl`
+
+**"Unable to connect to authentication service. Please check that phpBB is running and accessible."**
+- Cause: Network connection to phpBB3 failed
+- Solution: Verify phpBB3 URL is correct and reachable from AI Server
+- Test: `curl http://your-phpbb-url/api/auth/login` from AI Server host
+
+**"Authentication service configuration error. The service may not be properly configured."**
+- Cause: phpBB3 is returning HTML (404/403 pages) instead of JSON API responses
+- Solution: Verify phpBB3 authentication bridge extension is installed and enabled
+- Check: Extension routes are properly registered in phpBB3
+
+**"Invalid username or password"**
+- Cause: Login credentials are incorrect
+- Solution: Verify username and password in phpBB3 database
+
+## Improvements (Latest Release)
+
+### Enhanced Error Handling (v1.1)
+
+The authentication service now provides clear, user-friendly error messages when phpBB3 is unavailable or misconfigured:
+
+1. **Intelligent Error Detection:**
+   - Checks Content-Type header before parsing responses
+   - Detects HTML error pages vs JSON responses
+   - Distinguishes between connection errors and server errors
+
+2. **Security Improvements:**
+   - Sanitizes user input in log messages to prevent log injection attacks
+   - Removes control characters from logged usernames
+
+3. **Better Logging:**
+   - Logs phpBB connection attempts with full URL
+   - Logs HTTP status codes for troubleshooting
+   - Categorizes errors (connection, parsing, server error)
+
 ## Next Steps
 
 With authentication now working, AGP Studios IDE users can:
