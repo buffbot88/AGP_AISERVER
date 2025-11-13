@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace ASHATAIServer.Services
 {
@@ -24,13 +25,25 @@ namespace ASHATAIServer.Services
         }
 
         /// <summary>
+        /// Sanitize username for safe logging (remove newlines and control characters to prevent log injection)
+        /// </summary>
+        private static string SanitizeForLogging(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+            
+            // Remove newlines, carriage returns, and other control characters that could be used for log injection
+            return Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
+        }
+
+        /// <summary>
         /// Authenticate a user with username and password
         /// </summary>
         public async Task<AuthenticationResult> LoginAsync(string username, string password)
         {
             try
             {
-                _logger.LogDebug("Attempting login for user: {Username} via phpBB at {BaseUrl}", username, _phpbbBaseUrl);
+                _logger.LogDebug("Attempting login for user: {Username} via phpBB at {BaseUrl}", SanitizeForLogging(username), _phpbbBaseUrl);
                 
                 var response = await _httpClient.PostAsJsonAsync("/api/auth/login", new
                 {
@@ -55,7 +68,7 @@ namespace ASHATAIServer.Services
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     if (result?.Success == true && result.SessionId != null && result.User != null)
                     {
-                        _logger.LogDebug("Login successful for user: {Username}", username);
+                        _logger.LogDebug("Login successful for user: {Username}", SanitizeForLogging(username));
                         return new AuthenticationResult
                         {
                             Success = true,
@@ -144,7 +157,7 @@ namespace ASHATAIServer.Services
         {
             try
             {
-                _logger.LogDebug("Attempting registration for user: {Username} via phpBB at {BaseUrl}", username, _phpbbBaseUrl);
+                _logger.LogDebug("Attempting registration for user: {Username} via phpBB at {BaseUrl}", SanitizeForLogging(username), _phpbbBaseUrl);
                 
                 var response = await _httpClient.PostAsJsonAsync("/api/auth/register", new
                 {
@@ -170,7 +183,7 @@ namespace ASHATAIServer.Services
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     if (result?.Success == true && result.SessionId != null && result.User != null)
                     {
-                        _logger.LogDebug("Registration successful for user: {Username}", username);
+                        _logger.LogDebug("Registration successful for user: {Username}", SanitizeForLogging(username));
                         return new AuthenticationResult
                         {
                             Success = true,
