@@ -86,6 +86,53 @@ public class ApiClient
     }
     
     /// <summary>
+    /// Register a new user
+    /// </summary>
+    public async Task<RegisterResponse> RegisterAsync(string username, string email, string password)
+    {
+        try
+        {
+            var registerRequest = new RegisterRequest
+            {
+                Username = username,
+                Email = email,
+                Password = password
+            };
+            
+            var json = JsonConvert.SerializeObject(registerRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await _httpClient.PostAsync(
+                $"{GetBaseUrl()}/api/auth/register",
+                content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var registerResponse = JsonConvert.DeserializeObject<RegisterResponse>(responseJson);
+                return registerResponse ?? new RegisterResponse { Success = false, Message = "Invalid response" };
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new RegisterResponse 
+                { 
+                    Success = false, 
+                    Message = $"Registration failed: {response.StatusCode}" 
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new RegisterResponse 
+            { 
+                Success = false, 
+                Message = $"Error: {ex.Message}" 
+            };
+        }
+    }
+    
+    /// <summary>
     /// Get current user information including admin status
     /// </summary>
     public async Task<UserInfoResponse?> GetUserInfoAsync()

@@ -218,6 +218,9 @@ public partial class AdminConsoleWindow : Window
         
         if (result == MessageBoxResult.Yes)
         {
+            // Clear saved session
+            SessionManager.Instance.ClearSession();
+            
             var loginWindow = new LoginWindow();
             loginWindow.Show();
             Close();

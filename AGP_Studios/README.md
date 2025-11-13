@@ -18,9 +18,13 @@ A Windows WPF IDE client for AGP Studios with AI Server integration, enabling ad
 - **Local Storage**: Games stored in `%AppData%/AGP_IDE/Games`
 
 ### Authentication & Routing
-- **phpBB3 Login**: Authenticate using phpBB3 credentials via AI Server
+- **User Registration**: Create new user accounts directly from the IDE
+- **Login System**: Authenticate using username and password via AI Server
+- **Session Management**: Persistent login sessions with 24-hour expiry
+- **Auto-Login**: Automatically resume sessions on app restart
 - **Role-Based Routing**: Automatically route users to Admin Console or Game Library based on permissions
 - **Secure Token Storage**: Bearer token authentication for API requests
+- **Session Storage**: Sessions stored securely in `%AppData%/AGP_IDE/session.json`
 
 ### Configuration
 - **Configurable Server**: Default AI Server URL: `http://localhost:7077`
@@ -84,12 +88,14 @@ AGP_Studios.IDE/
 │   └── CodeDraft.cs        # Code draft model
 ├── Services/               # Business logic and API
 │   ├── ConfigurationManager.cs  # Settings management
+│   ├── SessionManager.cs   # Session persistence
 │   ├── ApiClient.cs        # AI Server API client
 │   ├── LocalRepository.cs  # Local storage for drafts/games
 │   └── GameServices.cs     # Game download/launch services
 ├── UI/                     # User interface
 │   └── Windows/
 │       ├── LoginWindow.xaml           # Login screen
+│       ├── RegisterWindow.xaml        # Registration screen
 │       ├── AdminConsoleWindow.xaml    # Admin code editor
 │       └── GameLibraryWindow.xaml     # Member game library
 ├── App.xaml                # Application resources and styles
@@ -101,9 +107,15 @@ AGP_Studios.IDE/
 The application integrates with the AGP AI Server using the following endpoints:
 
 ### Authentication
-- `POST /api/auth/login` - Login with phpBB3 credentials
+- `POST /api/auth/login` - Login with username and password
   ```json
   Request: { "Username": "user", "Password": "pass" }
+  Response: { "Success": true, "Token": "bearer_token" }
+  ```
+
+- `POST /api/auth/register` - Register a new user account
+  ```json
+  Request: { "Username": "user", "Email": "user@example.com", "Password": "pass" }
   Response: { "Success": true, "Token": "bearer_token" }
   ```
 
@@ -165,27 +177,40 @@ You can modify the server URL in the login window or by editing this file direct
   - `Game_{GameId}/` - Extracted game files
   - `{GameId}_install.json` - Installation metadata
 
+### Session Data
+- Location: `%AppData%/AGP_IDE/session.json`
+- Contains: Authentication token, user info, expiry (24 hours)
+- Enables auto-login when application restarts
+
 ## Usage
+
+### First Time Setup
+
+1. Launch the application
+2. Click "Create Account" on the login screen
+3. Enter your desired username, email, and password
+4. Click "Create Account" to register
+5. You will be automatically logged in and routed based on your permissions
 
 ### For Administrators
 
-1. Launch the application
-2. Enter AI Server URL (default: `http://localhost:7077`)
-3. Login with phpBB3 credentials
-4. Admin Console will open automatically
-5. Create/edit code drafts using the AvalonEdit editor
-6. Save drafts locally or publish to AI Server
-7. AI code generation features are placeholders for future integration
+1. Launch the application (auto-login if session is valid)
+2. If not logged in, enter credentials or register a new account
+3. Admin Console will open automatically for admin users
+4. Create/edit code drafts using the AvalonEdit editor
+5. Save drafts locally or publish to AI Server
+6. Click "Logout" to end your session
 
 ### For Members
 
-1. Launch the application
-2. Login with phpBB3 credentials
-3. Game Library will open automatically
+1. Launch the application (auto-login if session is valid)
+2. If not logged in, enter credentials or register a new account
+3. Game Library will open automatically for member users
 4. Browse available games in the "Available Games" tab
 5. Click "Download & Install" to download a game
 6. Once installed, switch to "Installed Games" tab
 7. Click "▶ Play" to launch a game
+8. Click "Logout" to end your session
 
 ## Development Notes
 

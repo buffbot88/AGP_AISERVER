@@ -29,3 +29,23 @@ public class UserInfoResponse
     public string Email { get; set; } = string.Empty;
     public bool IsAdmin { get; set; }
 }
+
+/// <summary>
+/// Registration request model
+/// </summary>
+public class RegisterRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Registration response model
+/// </summary>
+public class RegisterResponse
+{
+    public bool Success { get; set; }
+    public string? Token { get; set; }
+    public string? Message { get; set; }
+}
