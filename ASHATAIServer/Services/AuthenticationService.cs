@@ -1,27 +1,18 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-
 namespace ASHATAIServer.Services
 {
     /// <summary>
-    /// Authentication service that communicates with phpBB3 for user authentication.
-    /// Handles login, registration, and session validation via the ASHATOS Authentication Bridge extension.
+    /// Authentication service that manages user authentication using local database.
+    /// Handles login, registration, and session validation.
     /// </summary>
     public class AuthenticationService
     {
-        private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration;
+        private readonly UserDatabaseService _userDb;
         private readonly ILogger<AuthenticationService> _logger;
-        private readonly string _phpbbBaseUrl;
 
-        public AuthenticationService(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<AuthenticationService> logger)
+        public AuthenticationService(UserDatabaseService userDb, ILogger<AuthenticationService> logger)
         {
-            _configuration = configuration;
+            _userDb = userDb;
             _logger = logger;
-            _phpbbBaseUrl = configuration["Authentication:PhpBBBaseUrl"] ?? configuration["Authentication:CmsBaseUrl"] ?? "http://localhost/phpbb";
-            _httpClient = httpClientFactory.CreateClient();
-            _httpClient.BaseAddress = new Uri(_phpbbBaseUrl);
         }
 
         /// <summary>
@@ -33,7 +24,7 @@ namespace ASHATAIServer.Services
                 return string.Empty;
             
             // Remove newlines, carriage returns, and other control characters that could be used for log injection
-            return Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
+            return System.Text.RegularExpressions.Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
         }
 
         /// <summary>
@@ -41,113 +32,31 @@ namespace ASHATAIServer.Services
         /// </summary>
         public async Task<AuthenticationResult> LoginAsync(string username, string password)
         {
-            try
+            _logger.LogInformation("Login attempt for user: {Username}", SanitizeForLogging(username));
+
+            var result = await _userDb.LoginAsync(username, password);
+
+            if (result.Success && result.SessionId != null && result.User != null)
             {
-                _logger.LogDebug("Attempting login for user: {Username} via phpBB at {BaseUrl}", SanitizeForLogging(username), _phpbbBaseUrl);
-                
-                var response = await _httpClient.PostAsJsonAsync("/api/auth/login", new
-                {
-                    username,
-                    password
-                });
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Check if response is JSON before attempting to parse
-                    var contentType = response.Content.Headers.ContentType?.MediaType;
-                    if (contentType != "application/json")
-                    {
-                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
-                        return new AuthenticationResult
-                        {
-                            Success = false,
-                            Message = "Authentication service configuration error. Please contact administrator."
-                        };
-                    }
-
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                    if (result?.Success == true && result.SessionId != null && result.User != null)
-                    {
-                        _logger.LogDebug("Login successful for user: {Username}", SanitizeForLogging(username));
-                        return new AuthenticationResult
-                        {
-                            Success = true,
-                            SessionId = result.SessionId,
-                            UserId = result.User.Id,
-                            Username = result.User.Username,
-                            Email = result.User.Email,
-                            Role = result.User.Role,
-                            Message = result.Message ?? "Login successful"
-                        };
-                    }
-                }
-
-                // Handle HTTP error status codes
-                if ((int)response.StatusCode >= 500)
-                {
-                    _logger.LogError("phpBB server error (Status: {StatusCode})", response.StatusCode);
-                    return new AuthenticationResult
-                    {
-                        Success = false,
-                        Message = "Authentication service is temporarily unavailable. Please try again later."
-                    };
-                }
-
-                // Try to parse error response if it's JSON
-                var contentTypeError = response.Content.Headers.ContentType?.MediaType;
-                if (contentTypeError == "application/json")
-                {
-                    try
-                    {
-                        var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                        if (errorResult?.Message != null)
-                        {
-                            return new AuthenticationResult
-                            {
-                                Success = false,
-                                Message = errorResult.Message
-                            };
-                        }
-                    }
-                    catch (JsonException)
-                    {
-                        _logger.LogWarning("Failed to parse error response as JSON");
-                    }
-                }
-
+                _logger.LogInformation("Login successful for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
-                    Success = false,
-                    Message = "Invalid username or password"
+                    Success = true,
+                    SessionId = result.SessionId,
+                    UserId = result.User.Id,
+                    Username = result.User.Username,
+                    Email = result.User.Email,
+                    Role = result.User.Role,
+                    Message = result.Message
                 };
             }
-            catch (HttpRequestException ex)
+
+            _logger.LogWarning("Login failed for user: {Username}", SanitizeForLogging(username));
+            return new AuthenticationResult
             {
-                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Unable to connect to authentication service. Please check that phpBB is running and accessible."
-                };
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Authentication service configuration error. The service may not be properly configured."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during login");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred. Please try again later."
-                };
-            }
+                Success = false,
+                Message = result.Message
+            };
         }
 
         /// <summary>
@@ -155,114 +64,43 @@ namespace ASHATAIServer.Services
         /// </summary>
         public async Task<AuthenticationResult> RegisterAsync(string username, string email, string password)
         {
-            try
+            _logger.LogInformation("Registration attempt for user: {Username}", SanitizeForLogging(username));
+
+            var registerResult = await _userDb.RegisterUserAsync(username, email, password);
+
+            if (!registerResult.Success)
             {
-                _logger.LogDebug("Attempting registration for user: {Username} via phpBB at {BaseUrl}", SanitizeForLogging(username), _phpbbBaseUrl);
-                
-                var response = await _httpClient.PostAsJsonAsync("/api/auth/register", new
-                {
-                    username,
-                    email,
-                    password
-                });
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // Check if response is JSON before attempting to parse
-                    var contentType = response.Content.Headers.ContentType?.MediaType;
-                    if (contentType != "application/json")
-                    {
-                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
-                        return new AuthenticationResult
-                        {
-                            Success = false,
-                            Message = "Authentication service configuration error. Please contact administrator."
-                        };
-                    }
-
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                    if (result?.Success == true && result.SessionId != null && result.User != null)
-                    {
-                        _logger.LogDebug("Registration successful for user: {Username}", SanitizeForLogging(username));
-                        return new AuthenticationResult
-                        {
-                            Success = true,
-                            SessionId = result.SessionId,
-                            UserId = result.User.Id,
-                            Username = result.User.Username,
-                            Email = result.User.Email,
-                            Role = result.User.Role,
-                            Message = result.Message ?? "Registration successful"
-                        };
-                    }
-                }
-
-                // Handle HTTP error status codes
-                if ((int)response.StatusCode >= 500)
-                {
-                    _logger.LogError("phpBB server error (Status: {StatusCode})", response.StatusCode);
-                    return new AuthenticationResult
-                    {
-                        Success = false,
-                        Message = "Authentication service is temporarily unavailable. Please try again later."
-                    };
-                }
-
-                // Try to parse error response if it's JSON
-                var contentTypeError = response.Content.Headers.ContentType?.MediaType;
-                if (contentTypeError == "application/json")
-                {
-                    try
-                    {
-                        var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                        if (errorResult?.Message != null)
-                        {
-                            return new AuthenticationResult
-                            {
-                                Success = false,
-                                Message = errorResult.Message
-                            };
-                        }
-                    }
-                    catch (JsonException)
-                    {
-                        _logger.LogWarning("Failed to parse error response as JSON");
-                    }
-                }
-
+                _logger.LogWarning("Registration failed for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = "Registration failed"
+                    Message = registerResult.Message
                 };
             }
-            catch (HttpRequestException ex)
+
+            // Auto-login after successful registration
+            var loginResult = await _userDb.LoginAsync(username, password);
+
+            if (loginResult.Success && loginResult.SessionId != null && loginResult.User != null)
             {
-                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
+                _logger.LogInformation("Registration and auto-login successful for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
-                    Success = false,
-                    Message = "Unable to connect to authentication service. Please check that phpBB is running and accessible."
+                    Success = true,
+                    SessionId = loginResult.SessionId,
+                    UserId = loginResult.User.Id,
+                    Username = loginResult.User.Username,
+                    Email = loginResult.User.Email,
+                    Role = loginResult.User.Role,
+                    Message = "Registration successful"
                 };
             }
-            catch (JsonException ex)
+
+            return new AuthenticationResult
             {
-                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Authentication service configuration error. The service may not be properly configured."
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during registration");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred. Please try again later."
-                };
-            }
+                Success = false,
+                Message = "Registration successful but auto-login failed. Please try logging in."
+            };
         }
 
         /// <summary>
@@ -270,82 +108,33 @@ namespace ASHATAIServer.Services
         /// </summary>
         public async Task<AuthenticationResult> ValidateSessionAsync(string sessionId)
         {
-            try
-            {
-                _logger.LogDebug("Validating session via phpBB at {BaseUrl}", _phpbbBaseUrl);
-                
-                var response = await _httpClient.PostAsJsonAsync("/api/auth/validate", new
-                {
-                    sessionId
-                });
+            _logger.LogDebug("Validating session");
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Check if response is JSON before attempting to parse
-                    var contentType = response.Content.Headers.ContentType?.MediaType;
-                    if (contentType != "application/json")
-                    {
-                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
-                        return new AuthenticationResult
-                        {
-                            Success = false,
-                            Message = "Authentication service configuration error"
-                        };
-                    }
+            var result = await _userDb.ValidateSessionAsync(sessionId);
 
-                    var result = await response.Content.ReadFromJsonAsync<ValidateResponse>();
-                    if (result?.Success == true && result.User != null)
-                    {
-                        _logger.LogDebug("Session validation successful");
-                        return new AuthenticationResult
-                        {
-                            Success = true,
-                            SessionId = sessionId,
-                            UserId = result.User.Id,
-                            Username = result.User.Username,
-                            Email = result.User.Email,
-                            Role = result.User.Role,
-                            Message = "Session is valid"
-                        };
-                    }
-                }
+            if (result.Success && result.User != null)
+            {
+                _logger.LogDebug("Session validation successful");
+                return new AuthenticationResult
+                {
+                    Success = true,
+                    SessionId = sessionId,
+                    UserId = result.User.Id,
+                    Username = result.User.Username,
+                    Email = result.User.Email,
+                    Role = result.User.Role,
+                    Message = result.Message
+                };
+            }
 
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Invalid or expired session"
-                };
-            }
-            catch (HttpRequestException ex)
+            return new AuthenticationResult
             {
-                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Unable to connect to authentication service"
-                };
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Authentication service configuration error"
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during session validation");
-                return new AuthenticationResult
-                {
-                    Success = false,
-                    Message = "Invalid or expired session"
-                };
-            }
+                Success = false,
+                Message = result.Message
+            };
         }
 
-        // Response models
+        // Response models (kept for backward compatibility)
         private class LoginResponse
         {
             public bool Success { get; set; }

@@ -41,7 +41,7 @@ public class ApiClient
     }
     
     /// <summary>
-    /// Authenticate user with phpBB3 credentials
+    /// Authenticate user with credentials
     /// </summary>
     public async Task<LoginResponse> LoginAsync(string username, string password)
     {

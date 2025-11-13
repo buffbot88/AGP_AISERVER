@@ -1,9 +1,9 @@
 # AGP IDE Client (Windows) — Skeleton
 
-This is a Windows WPF IDE client for connecting to an AI Server (default: http://localhost:8088).
+This is a Windows WPF IDE client for connecting to an AI Server (default: http://localhost:7077).
 
 Features
-- Login via phpBB3 through the AI Server
+- Login and registration through the AI Server with local user database
 - Admin route → AI Console for code creation and draft management
 - Member route → Library of published games, download & launch
 - Local draft storage (in %AppData%/AGP_IDE)
@@ -20,13 +20,17 @@ Quick start
 1. Open the solution in Visual Studio or run:
    dotnet restore
    dotnet build
-2. Edit `config.json` (default server: http://localhost:8088)
-3. Run the app. Login with phpBB3 credentials via the server API.
+2. Edit `config.json` (default server: http://localhost:7077)
+3. Run the app. Register a new account or login with existing credentials.
 4. If you are admin, you'll be taken to the AI Console. If member, to the Game Library.
 
 API expectations (on AI Server)
-- POST /api/auth/phpbb3/login
+- POST /api/auth/login
   Body: { "username": "...", "password": "..." }
+  Response: { "token": "JWT or session token" }
+
+- POST /api/auth/register
+  Body: { "username": "...", "email": "...", "password": "..." }
   Response: { "token": "JWT or session token" }
 
 - GET /api/user/me

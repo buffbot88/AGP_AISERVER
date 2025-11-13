@@ -23,7 +23,7 @@ A Windows WPF IDE client for AGP Studios with AI Server integration, enabling ad
 - **Secure Token Storage**: Bearer token authentication for API requests
 
 ### Configuration
-- **Configurable Server**: Default AI Server URL: `http://localhost:8088`
+- **Configurable Server**: Default AI Server URL: `http://localhost:7077`
 - **Settings Persistence**: Configuration saved in `%AppData%/AGP_IDE/config.json`
 
 ## Prerequisites
@@ -142,8 +142,8 @@ Configuration is stored in `%AppData%/AGP_IDE/config.json`:
 
 ```json
 {
-  "ServerUrl": "http://localhost:8088",
-  "ServerPort": 8088,
+  "ServerUrl": "http://localhost:7077",
+  "ServerPort": 7077,
   "AppDataPath": "C:\\Users\\{User}\\AppData\\Roaming\\AGP_IDE",
   "DraftsPath": "C:\\Users\\{User}\\AppData\\Roaming\\AGP_IDE\\Drafts",
   "GamesPath": "C:\\Users\\{User}\\AppData\\Roaming\\AGP_IDE\\Games"
@@ -170,7 +170,7 @@ You can modify the server URL in the login window or by editing this file direct
 ### For Administrators
 
 1. Launch the application
-2. Enter AI Server URL (default: `http://localhost:8088`)
+2. Enter AI Server URL (default: `http://localhost:7077`)
 3. Login with phpBB3 credentials
 4. Admin Console will open automatically
 5. Create/edit code drafts using the AvalonEdit editor

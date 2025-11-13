@@ -5,8 +5,8 @@ namespace AGP_Studios.IDE.Models;
 /// </summary>
 public class AppConfiguration
 {
-    public string ServerUrl { get; set; } = "http://localhost:8088";
-    public int ServerPort { get; set; } = 8088;
+    public string ServerUrl { get; set; } = "http://localhost:7077";
+    public int ServerPort { get; set; } = 7077;
     public string AppDataPath { get; set; } = string.Empty;
     public string DraftsPath { get; set; } = string.Empty;
     public string GamesPath { get; set; } = string.Empty;

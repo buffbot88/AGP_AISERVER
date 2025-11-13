@@ -15,7 +15,7 @@ Both applications work together to create an immersive AI assistant experience w
 
 ### Step 1: Start the AI Server
 
-First, start the ASHATAIServer on port 8088:
+First, start the ASHATAIServer on port 7077:
 
 ```bash
 cd ASHATAIServer
@@ -28,8 +28,8 @@ You should see:
 ║         ASHATAIServer - AI Processing Server            ║
 ╚══════════════════════════════════════════════════════════╝
 
-Server started on port: 8088
-Server URL: http://localhost:8088
+Server started on port: 7077
+Server URL: http://localhost:7077
 ```
 
 Leave this running in one terminal.
@@ -44,7 +44,7 @@ dotnet run
 ```
 
 The goddess will automatically:
-- Try to connect to the local server at `localhost:8088`
+- Try to connect to the local server at `localhost:7077`
 - Display an animated goddess mascot on your desktop
 - Greet you with a divine message
 - Be ready to chat!
@@ -91,7 +91,7 @@ This starts an interactive console session where you can chat with ASHAT.
 
 The ASHATGoddess client intelligently connects to servers:
 
-1. **First**: Tries to connect to local ASHATAIServer at `localhost:8088`
+1. **First**: Tries to connect to local ASHATAIServer at `localhost:7077`
 2. **Fallback**: If local server unavailable, tries the configured external server
 3. **Final Fallback**: If no servers available, uses built-in responses
 
@@ -106,14 +106,14 @@ The ASHATAIServer provides these endpoints:
 
 ### Health Check
 ```bash
-GET http://localhost:8088/api/ai/health
+GET http://localhost:7077/api/ai/health
 ```
 
 Returns server status.
 
 ### Process AI Prompt
 ```bash
-POST http://localhost:8088/api/ai/process
+POST http://localhost:7077/api/ai/process
 Content-Type: application/json
 
 {
@@ -125,7 +125,7 @@ Returns goddess-personality response.
 
 ### Get Server Status
 ```bash
-GET http://localhost:8088/api/ai/status
+GET http://localhost:7077/api/ai/status
 ```
 
 Shows loaded models and server information.
@@ -162,12 +162,12 @@ The goddess visibility issue has been fixed. If you still have problems:
 If ASHATGoddess can't connect to ASHATAIServer:
 
 1. **Verify Server is Running**: Check that `dotnet run` is active in ASHATAIServer
-2. **Check Port 8088**: Make sure nothing else is using port 8088
+2. **Check Port 7077**: Make sure nothing else is using port 7077
    ```bash
-   lsof -i :8088  # Linux/Mac
-   netstat -ano | findstr :8088  # Windows
+   lsof -i :7077  # Linux/Mac
+   netstat -ano | findstr :7077  # Windows
    ```
-3. **Firewall**: Ensure your firewall allows local connections on port 8088
+3. **Firewall**: Ensure your firewall allows local connections on port 7077
 
 ### No Sound (Windows)
 
