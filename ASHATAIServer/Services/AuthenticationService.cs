@@ -16,17 +16,29 @@ namespace ASHATAIServer.Services
         }
 
         /// <summary>
+        /// Sanitize username for safe logging (remove newlines and control characters to prevent log injection)
+        /// </summary>
+        private static string SanitizeForLogging(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+            
+            // Remove newlines, carriage returns, and other control characters that could be used for log injection
+            return System.Text.RegularExpressions.Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
+        }
+
+        /// <summary>
         /// Authenticate a user with username and password
         /// </summary>
         public async Task<AuthenticationResult> LoginAsync(string username, string password)
         {
-            _logger.LogInformation("Login attempt for user: {Username}", username);
+            _logger.LogInformation("Login attempt for user: {Username}", SanitizeForLogging(username));
 
             var result = await _userDb.LoginAsync(username, password);
 
             if (result.Success && result.SessionId != null && result.User != null)
             {
-                _logger.LogInformation("Login successful for user: {Username}", username);
+                _logger.LogInformation("Login successful for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = true,
@@ -39,7 +51,7 @@ namespace ASHATAIServer.Services
                 };
             }
 
-            _logger.LogWarning("Login failed for user: {Username}", username);
+            _logger.LogWarning("Login failed for user: {Username}", SanitizeForLogging(username));
             return new AuthenticationResult
             {
                 Success = false,
@@ -52,13 +64,13 @@ namespace ASHATAIServer.Services
         /// </summary>
         public async Task<AuthenticationResult> RegisterAsync(string username, string email, string password)
         {
-            _logger.LogInformation("Registration attempt for user: {Username}", username);
+            _logger.LogInformation("Registration attempt for user: {Username}", SanitizeForLogging(username));
 
             var registerResult = await _userDb.RegisterUserAsync(username, email, password);
 
             if (!registerResult.Success)
             {
-                _logger.LogWarning("Registration failed for user: {Username}", username);
+                _logger.LogWarning("Registration failed for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = false,
@@ -71,7 +83,7 @@ namespace ASHATAIServer.Services
 
             if (loginResult.Success && loginResult.SessionId != null && loginResult.User != null)
             {
-                _logger.LogInformation("Registration and auto-login successful for user: {Username}", username);
+                _logger.LogInformation("Registration and auto-login successful for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = true,

@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ASHATAIServer.Services
 {
@@ -19,6 +20,18 @@ namespace ASHATAIServer.Services
             _connectionString = $"Data Source={dbPath}";
             
             InitializeDatabase();
+        }
+
+        /// <summary>
+        /// Sanitize username for safe logging (remove newlines and control characters to prevent log injection)
+        /// </summary>
+        private static string SanitizeForLogging(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+            
+            // Remove newlines, carriage returns, and other control characters that could be used for log injection
+            return Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
         }
 
         private void InitializeDatabase()
@@ -90,7 +103,7 @@ namespace ASHATAIServer.Services
                 command.Parameters.AddWithValue("$createdAt", DateTime.UtcNow.ToString("o"));
 
                 var userId = Convert.ToInt32(await command.ExecuteScalarAsync());
-                _logger.LogInformation("User registered successfully: {Username} (ID: {UserId})", username, userId);
+                _logger.LogInformation("User registered successfully: {Username} (ID: {UserId})", SanitizeForLogging(username), userId);
                 
                 return (true, "Registration successful", userId);
             }
@@ -108,7 +121,7 @@ namespace ASHATAIServer.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error registering user: {Username}", username);
+                _logger.LogError(ex, "Error registering user: {Username}", SanitizeForLogging(username));
                 return (false, "An error occurred during registration", 0);
             }
         }
@@ -187,12 +200,12 @@ namespace ASHATAIServer.Services
                     Role = role
                 };
 
-                _logger.LogInformation("User logged in successfully: {Username}", username);
+                _logger.LogInformation("User logged in successfully: {Username}", SanitizeForLogging(username));
                 return (true, "Login successful", sessionId, userInfo);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during login: {Username}", username);
+                _logger.LogError(ex, "Error during login: {Username}", SanitizeForLogging(username));
                 return (false, "An error occurred during login", null, null);
             }
         }
