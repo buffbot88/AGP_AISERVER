@@ -11,11 +11,13 @@ namespace ASHATAIServer.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthenticationService> _logger;
         private readonly string _phpbbBaseUrl;
 
-        public AuthenticationService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public AuthenticationService(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<AuthenticationService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
             _phpbbBaseUrl = configuration["Authentication:PhpBBBaseUrl"] ?? configuration["Authentication:CmsBaseUrl"] ?? "http://localhost/phpbb";
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.BaseAddress = new Uri(_phpbbBaseUrl);
@@ -28,6 +30,8 @@ namespace ASHATAIServer.Services
         {
             try
             {
+                _logger.LogDebug("Attempting login for user: {Username} via phpBB at {BaseUrl}", username, _phpbbBaseUrl);
+                
                 var response = await _httpClient.PostAsJsonAsync("/api/auth/login", new
                 {
                     username,
@@ -36,9 +40,22 @@ namespace ASHATAIServer.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Check if response is JSON before attempting to parse
+                    var contentType = response.Content.Headers.ContentType?.MediaType;
+                    if (contentType != "application/json")
+                    {
+                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
+                        return new AuthenticationResult
+                        {
+                            Success = false,
+                            Message = "Authentication service configuration error. Please contact administrator."
+                        };
+                    }
+
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     if (result?.Success == true && result.SessionId != null && result.User != null)
                     {
+                        _logger.LogDebug("Login successful for user: {Username}", username);
                         return new AuthenticationResult
                         {
                             Success = true,
@@ -52,19 +69,70 @@ namespace ASHATAIServer.Services
                     }
                 }
 
-                var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                // Handle HTTP error status codes
+                if ((int)response.StatusCode >= 500)
+                {
+                    _logger.LogError("phpBB server error (Status: {StatusCode})", response.StatusCode);
+                    return new AuthenticationResult
+                    {
+                        Success = false,
+                        Message = "Authentication service is temporarily unavailable. Please try again later."
+                    };
+                }
+
+                // Try to parse error response if it's JSON
+                var contentTypeError = response.Content.Headers.ContentType?.MediaType;
+                if (contentTypeError == "application/json")
+                {
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                        if (errorResult?.Message != null)
+                        {
+                            return new AuthenticationResult
+                            {
+                                Success = false,
+                                Message = errorResult.Message
+                            };
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        _logger.LogWarning("Failed to parse error response as JSON");
+                    }
+                }
+
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = errorResult?.Message ?? "Login failed"
+                    Message = "Invalid username or password"
+                };
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Unable to connect to authentication service. Please check that phpBB is running and accessible."
+                };
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Authentication service configuration error. The service may not be properly configured."
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Unexpected error during login");
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = $"Authentication service error: {ex.Message}"
+                    Message = "An unexpected error occurred. Please try again later."
                 };
             }
         }
@@ -76,6 +144,8 @@ namespace ASHATAIServer.Services
         {
             try
             {
+                _logger.LogDebug("Attempting registration for user: {Username} via phpBB at {BaseUrl}", username, _phpbbBaseUrl);
+                
                 var response = await _httpClient.PostAsJsonAsync("/api/auth/register", new
                 {
                     username,
@@ -85,9 +155,22 @@ namespace ASHATAIServer.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Check if response is JSON before attempting to parse
+                    var contentType = response.Content.Headers.ContentType?.MediaType;
+                    if (contentType != "application/json")
+                    {
+                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
+                        return new AuthenticationResult
+                        {
+                            Success = false,
+                            Message = "Authentication service configuration error. Please contact administrator."
+                        };
+                    }
+
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     if (result?.Success == true && result.SessionId != null && result.User != null)
                     {
+                        _logger.LogDebug("Registration successful for user: {Username}", username);
                         return new AuthenticationResult
                         {
                             Success = true,
@@ -101,19 +184,70 @@ namespace ASHATAIServer.Services
                     }
                 }
 
-                var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                // Handle HTTP error status codes
+                if ((int)response.StatusCode >= 500)
+                {
+                    _logger.LogError("phpBB server error (Status: {StatusCode})", response.StatusCode);
+                    return new AuthenticationResult
+                    {
+                        Success = false,
+                        Message = "Authentication service is temporarily unavailable. Please try again later."
+                    };
+                }
+
+                // Try to parse error response if it's JSON
+                var contentTypeError = response.Content.Headers.ContentType?.MediaType;
+                if (contentTypeError == "application/json")
+                {
+                    try
+                    {
+                        var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                        if (errorResult?.Message != null)
+                        {
+                            return new AuthenticationResult
+                            {
+                                Success = false,
+                                Message = errorResult.Message
+                            };
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        _logger.LogWarning("Failed to parse error response as JSON");
+                    }
+                }
+
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = errorResult?.Message ?? "Registration failed"
+                    Message = "Registration failed"
+                };
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Unable to connect to authentication service. Please check that phpBB is running and accessible."
+                };
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Authentication service configuration error. The service may not be properly configured."
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Unexpected error during registration");
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = $"Authentication service error: {ex.Message}"
+                    Message = "An unexpected error occurred. Please try again later."
                 };
             }
         }
@@ -125,6 +259,8 @@ namespace ASHATAIServer.Services
         {
             try
             {
+                _logger.LogDebug("Validating session via phpBB at {BaseUrl}", _phpbbBaseUrl);
+                
                 var response = await _httpClient.PostAsJsonAsync("/api/auth/validate", new
                 {
                     sessionId
@@ -132,9 +268,22 @@ namespace ASHATAIServer.Services
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Check if response is JSON before attempting to parse
+                    var contentType = response.Content.Headers.ContentType?.MediaType;
+                    if (contentType != "application/json")
+                    {
+                        _logger.LogWarning("phpBB returned non-JSON response (Content-Type: {ContentType})", contentType);
+                        return new AuthenticationResult
+                        {
+                            Success = false,
+                            Message = "Authentication service configuration error"
+                        };
+                    }
+
                     var result = await response.Content.ReadFromJsonAsync<ValidateResponse>();
                     if (result?.Success == true && result.User != null)
                     {
+                        _logger.LogDebug("Session validation successful");
                         return new AuthenticationResult
                         {
                             Success = true,
@@ -154,12 +303,31 @@ namespace ASHATAIServer.Services
                     Message = "Invalid or expired session"
                 };
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError(ex, "Failed to connect to phpBB at {BaseUrl}", _phpbbBaseUrl);
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = $"Session validation error: {ex.Message}"
+                    Message = "Unable to connect to authentication service"
+                };
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse response from phpBB (likely received HTML instead of JSON)");
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Authentication service configuration error"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during session validation");
+                return new AuthenticationResult
+                {
+                    Success = false,
+                    Message = "Invalid or expired session"
                 };
             }
         }
