@@ -56,7 +56,7 @@ Originally designed for the ASHAT Goddess desktop client, it now provides compre
    dotnet run
    ```
 
-The server will start on **port 8088** by default.
+The server will start on **port 7077** by default.
 
 ### Adding Language Models
 
@@ -368,12 +368,12 @@ dotnet run
 
 ### Port Configuration
 
-The server is configured to run on port **8088**. To change the port, modify the `Program.cs` file:
+The server is configured to run on port **7077**. To change the port, modify the `Program.cs` file:
 
 ```csharp
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8088);  // Change this to your desired port
+    options.ListenAnyIP(7077);  // Change this to your desired port
 });
 ```
 
@@ -382,19 +382,19 @@ builder.WebHost.ConfigureKestrel(options =>
 The ASHATGoddessClient can connect to this server for AI processing. In the client's configuration, set the server URL to:
 
 ```
-http://localhost:8088
+http://localhost:7077
 ```
 
 Or if running on a different machine:
 
 ```
-http://your-server-ip:8088
+http://your-server-ip:7077
 ```
 
 Example client integration:
 ```csharp
 var client = new HttpClient();
-client.BaseAddress = new Uri("http://localhost:8088");
+client.BaseAddress = new Uri("http://localhost:7077");
 
 var request = new
 {
@@ -508,8 +508,8 @@ app.Use(async (context, next) =>
 
 ### Server won't start
 
-- **Issue**: Port 8088 already in use
-- **Solution**: Stop any other process using port 8088 or change the port in Program.cs
+- **Issue**: Port 7077 already in use
+- **Solution**: Stop any other process using port 7077 or change the port in Program.cs
 
 ### Models not loading
 
@@ -573,7 +573,7 @@ For issues or questions:
 
 **ASHATAIServer v1.0.0**  
 Built with ❤️ for ASHAT Goddess  
-**Port:** 8088  
+**Port:** 7077  
 **Status:** Ready for Production
 
 ---

@@ -6,24 +6,24 @@ This directory contains examples for connecting to ASHATAIServer.
 
 ### Health Check
 ```bash
-curl http://localhost:8088/api/ai/health
+curl http://localhost:7077/api/ai/health
 ```
 
 ### Get Status
 ```bash
-curl http://localhost:8088/api/ai/status
+curl http://localhost:7077/api/ai/status
 ```
 
 ### Process a Prompt
 ```bash
-curl -X POST http://localhost:8088/api/ai/process \
+curl -X POST http://localhost:7077/api/ai/process \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Hello, ASHAT! Tell me about yourself."}'
 ```
 
 ### Scan for Models
 ```bash
-curl -X POST http://localhost:8088/api/ai/models/scan
+curl -X POST http://localhost:7077/api/ai/models/scan
 ```
 
 ## C# Client Example
@@ -31,7 +31,7 @@ curl -X POST http://localhost:8088/api/ai/models/scan
 ```csharp
 using System.Net.Http.Json;
 
-var client = new HttpClient { BaseAddress = new Uri("http://localhost:8088") };
+var client = new HttpClient { BaseAddress = new Uri("http://localhost:7077") };
 
 // Check health
 var health = await client.GetFromJsonAsync<dynamic>("/api/ai/health");
@@ -112,7 +112,7 @@ public class ProcessingResult
 import requests
 import json
 
-BASE_URL = "http://localhost:8088"
+BASE_URL = "http://localhost:7077"
 
 # Check health
 health = requests.get(f"{BASE_URL}/api/ai/health").json()
@@ -133,7 +133,7 @@ print(f"Response: {result['response']}")
 ```javascript
 const fetch = require('node-fetch'); // or use native fetch in Node 18+
 
-const BASE_URL = 'http://localhost:8088';
+const BASE_URL = 'http://localhost:7077';
 
 async function processPrompt(prompt) {
     const response = await fetch(`${BASE_URL}/api/ai/process`, {
