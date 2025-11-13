@@ -9,7 +9,7 @@ This implementation successfully combines the GameServer (LegendaryGameSystem) m
 ### 1. Project Integration
 - **Added Reference**: LegendaryGameSystem project reference to ASHATAIServer.csproj
 - **Build Success**: Both projects build together without conflicts
-- **Unified Deployment**: Single deployable application on port 8088
+- **Unified Deployment**: Single deployable application on port 7077
 
 ### 2. API Controllers
 
@@ -148,7 +148,7 @@ builder.Services.AddSingleton<AIEnhancedGameServerService>();
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8088/api/gameserver/create-ai-enhanced \
+curl -X POST http://localhost:7077/api/gameserver/create-ai-enhanced \
   -H "Content-Type: application/json" \
   -d '{
     "description": "A medieval RPG with magic spells and dragon battles",
@@ -185,7 +185,7 @@ curl -X POST http://localhost:8088/api/gameserver/create-ai-enhanced \
 
 **Request:**
 ```bash
-curl http://localhost:8088/api/gameserver/suggestions/abc123def456
+curl http://localhost:7077/api/gameserver/suggestions/abc123def456
 ```
 
 **Response:**
@@ -221,7 +221,7 @@ curl http://localhost:8088/api/gameserver/suggestions/abc123def456
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│              ASHATAIServer (Port 8088)              │
+│              ASHATAIServer (Port 7077)              │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
 │  ┌──────────────────┐    ┌───────────────────┐    │

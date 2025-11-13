@@ -44,7 +44,7 @@ On first launch, you'll see the login window:
 
 ![Login Window](docs/images/login-window.png)
 
-- **Default Server URL:** `http://localhost:8088`
+- **Default Server URL:** `http://localhost:7077`
 - Modify if your AI Server is on a different host/port
 - The configuration will be saved for future use
 
@@ -131,8 +131,8 @@ Games are stored in `%AppData%/AGP_IDE/Games`
 ### Default Configuration
 ```json
 {
-  "ServerUrl": "http://localhost:8088",
-  "ServerPort": 8088,
+  "ServerUrl": "http://localhost:7077",
+  "ServerPort": 7077,
   "AppDataPath": "C:\\Users\\{You}\\AppData\\Roaming\\AGP_IDE",
   "DraftsPath": "C:\\Users\\{You}\\AppData\\Roaming\\AGP_IDE\\Drafts",
   "GamesPath": "C:\\Users\\{You}\\AppData\\Roaming\\AGP_IDE\\Games"
@@ -154,7 +154,7 @@ You can modify the server URL in two ways:
 - ✅ Verify AI Server is running
 - ✅ Check server URL and port
 - ✅ Ensure firewall allows connection
-- ✅ Try `http://localhost:8088` for local server
+- ✅ Try `http://localhost:7077` for local server
 
 ### Games Won't Download
 **Problem:** Download button doesn't work
