@@ -3,10 +3,10 @@ using LegendaryGameSystem;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure to listen on port 8088
+// Configure to listen on port 7077
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8088);
+    options.ListenAnyIP(7077);
 });
 
 // Add services to the container
@@ -27,6 +27,9 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+// Register User Database Service
+builder.Services.AddSingleton<UserDatabaseService>();
 
 // Register Authentication Service
 builder.Services.AddSingleton<AuthenticationService>();
@@ -57,8 +60,8 @@ Console.WriteLine("╔═══════════════════�
 Console.WriteLine("║    ASHATAIServer - AI Processing & Game Server          ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
 Console.WriteLine();
-Console.WriteLine($"Server started on port: 8088");
-Console.WriteLine($"Server URL: http://localhost:8088");
+Console.WriteLine($"Server started on port: 7077");
+Console.WriteLine($"Server URL: http://localhost:7077");
 Console.WriteLine();
 Console.WriteLine("Available Endpoints:");
 Console.WriteLine("  Authentication:");
