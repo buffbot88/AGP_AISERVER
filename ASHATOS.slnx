@@ -1,4 +1,3 @@
 <Solution>
   <Project Path="ASHATAIServer/ASHATAIServer.csproj" />
-  <Project Path="Abstractions/Abstractions.csproj" />
 </Solution>
