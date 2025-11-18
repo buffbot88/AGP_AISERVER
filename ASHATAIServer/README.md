@@ -1,13 +1,14 @@
-# ASHATAIServer - AI Processing & Game Server
+# ASHATAIServer - AI Processing Server
 
 ## 🌟 Overview
 
-**ASHATAIServer** is a unified AI processing and game server that combines:
+**ASHATAIServer** is an AI processing server that provides:
 - **AI Language Model Processing** - Using .gguf (GGUF format) model files for AI inference
-- **Game Server Integration** - Complete game creation, deployment, and management system
-- **AI-Enhanced Game Creation** - Uses AI to intelligently parse game descriptions and generate suggestions
+- **User Authentication** - Secure login and registration system with local user database
 
-Originally designed for the ASHAT Goddess desktop client, it now provides comprehensive game development and AI services through a REST API.
+Originally designed for the ASHAT Goddess desktop client, it now provides comprehensive AI services through a REST API.
+
+**Note:** The Game Server functionality has been separated into a standalone module and is no longer part of this server.
 
 ## ✨ Features
 
@@ -18,19 +19,14 @@ Originally designed for the ASHAT Goddess desktop client, it now provides compre
 - 📊 **Status Monitoring** - Real-time status of loaded models
 - ✅ **Health Checks** - Built-in health check endpoints
 
-### Game Server Features
-- 🎮 **AI-Driven Game Creation** - Create complete games from natural language descriptions
-- 🚀 **Automatic Code Generation** - Generates front-end and back-end code
-- 🎨 **Asset Management** - Creates and manages game assets
-- 📦 **One-Click Deployment** - Deploy game servers with a single command
-- 🤖 **AI-Enhanced Parsing** - Uses AI models to intelligently parse game requirements
-- 💡 **AI Suggestions** - Get AI-powered improvement suggestions for games
-- 📊 **Project Management** - List, update, delete, and export game projects
+### Authentication Services
+- 🔐 **User Management** - Secure user registration and login
+- 🗄️ **Local Database** - SQLite-based user storage
+- 🔑 **Session Tokens** - Token-based authentication
 
 ### Integration
 - 🔓 **CORS Enabled** - Ready for cross-origin requests from ASHAT clients
 - 🌐 **REST API** - Comprehensive HTTP API for all services
-- 🔗 **Unified Platform** - AI and Game Server work together seamlessly
 
 ## 🚀 Quick Start
 
@@ -144,201 +140,6 @@ POST /api/ai/models/scan
 ```
 
 Manually triggers a scan of the models directory and attempts to load any new models.
-
-## 🤝 How AI and Game Server Work Together
-
-The ASHATAIServer integrates AI language models with the game server to provide enhanced functionality:
-
-### AI-Enhanced Game Creation
-When you use the `/api/gameserver/create-ai-enhanced` endpoint:
-1. Your game description is sent to the AI language model
-2. The AI analyzes the description to extract:
-   - **Game Type**: RPG, MMO, FPS, Strategy, etc.
-   - **Theme**: Fantasy, Sci-Fi, Horror, Medieval, etc.
-   - **Features**: Specific gameplay features mentioned in the description
-3. The parsed information is used to create a properly configured game project
-4. If AI parsing fails, the system falls back to keyword-based parsing
-
-**Example:**
-```
-Input: "A space exploration game with alien encounters and resource management"
-
-AI Extracts:
-- GameType: Simulation
-- Theme: sci-fi
-- Features: ["Exploration System", "Resource Management", "NPC Encounters"]
-```
-
-### AI-Powered Improvement Suggestions
-The `/api/gameserver/suggestions/{gameId}` endpoint uses AI to:
-1. Analyze your existing game project
-2. Review the game type, theme, features, and description
-3. Generate 3-5 specific, actionable suggestions for improvements
-4. Return practical recommendations for gameplay, engagement, or technical enhancements
-
-**Example Suggestions:**
-- "Add a progression system with skill trees to increase player engagement"
-- "Implement daily quests to encourage regular player return"
-- "Create unique boss encounters with special mechanics"
-- "Add a crafting system that ties into resource management"
-
-### Benefits of Integration
-- 🧠 **Smarter Game Creation** - AI understands natural language descriptions better than keyword matching
-- 💡 **Creative Suggestions** - Get ideas for game improvements you might not have considered
-- 🚀 **Faster Development** - Less time configuring, more time creating
-- 🎯 **Better Results** - AI helps extract the full intent from your game descriptions
-
-### Game Server Services
-
-#### Get Game Server Status
-```http
-GET /api/gameserver/status
-```
-
-Returns the current status of the game server including active projects and deployments.
-
-#### Get Server Capabilities
-```http
-GET /api/gameserver/capabilities
-```
-
-Returns information about supported game types, features, and system limits.
-
-**Response:**
-```json
-{
-  "maxConcurrentServers": 50,
-  "activeServers": 2,
-  "supportedGameTypes": ["RPG", "MMO", "FPS", "Strategy", ...],
-  "availableFeatures": ["Natural Language Design", "AI Asset Creation", ...]
-}
-```
-
-#### Create New Game
-```http
-POST /api/gameserver/create
-Content-Type: application/json
-
-{
-  "userId": "00000000-0000-0000-0000-000000000000",
-  "description": "A medieval MMO with castle siege battles and crafting",
-  "gameType": "MMO",
-  "theme": "medieval",
-  "features": ["Combat System", "Crafting System"],
-  "licenseKey": "DEMO",
-  "generateAssets": true,
-  "autoDeploy": false
-}
-```
-
-#### Create Game with AI Enhancement
-```http
-POST /api/gameserver/create-ai-enhanced
-Content-Type: application/json
-
-{
-  "description": "A space exploration game with alien encounters and resource management",
-  "userId": "00000000-0000-0000-0000-000000000000",
-  "licenseKey": "DEMO"
-}
-```
-
-This endpoint uses AI to intelligently parse the game description and extract:
-- Game type (RPG, MMO, FPS, etc.)
-- Theme (fantasy, sci-fi, horror, etc.)
-- Key features mentioned in the description
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Game created successfully",
-  "gameId": "abc123def456",
-  "projectPath": "/path/to/project",
-  "project": { ... },
-  "generatedFiles": [...]
-}
-```
-
-#### List All Projects
-```http
-GET /api/gameserver/projects
-```
-
-Returns a list of all game projects.
-
-#### Get Project Details
-```http
-GET /api/gameserver/project/{gameId}
-```
-
-Returns detailed information about a specific game project.
-
-#### Deploy Game Server
-```http
-POST /api/gameserver/deploy/{gameId}
-Content-Type: application/json
-
-{
-  "port": 5000,
-  "maxPlayers": 100,
-  "enableWebSocket": true,
-  "enableDatabase": true
-}
-```
-
-Deploys the game to a server and makes it available for players.
-
-#### Get AI Improvement Suggestions
-```http
-GET /api/gameserver/suggestions/{gameId}
-```
-
-Uses AI to analyze the game project and provide specific suggestions for improvements.
-
-**Response:**
-```json
-{
-  "gameId": "abc123def456",
-  "suggestions": "1. Add a progression system...\n2. Implement daily quests...\n3. Create boss encounters..."
-}
-```
-
-#### Update Game
-```http
-PUT /api/gameserver/update/{gameId}
-Content-Type: application/json
-
-{
-  "updateDescription": "Add multiplayer chat and leaderboards"
-}
-```
-
-#### Delete Game
-```http
-DELETE /api/gameserver/{gameId}
-```
-
-Deletes a game project and all its associated files.
-
-#### Export Game
-```http
-POST /api/gameserver/export/{gameId}
-Content-Type: application/json
-
-{
-  "format": "Complete"  // Options: ZipArchive, SourceCode, Binary, Complete
-}
-```
-
-Exports the game project in the specified format.
-
-#### List User Games
-```http
-GET /api/gameserver/user/{userId}/games
-```
-
-Returns all games created by a specific user.
 
 ## 🔧 Configuration
 

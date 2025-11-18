@@ -1,5 +1,4 @@
 using ASHATAIServer.Services;
-using LegendaryGameSystem;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,18 +36,10 @@ builder.Services.AddSingleton<AuthenticationService>();
 // Register LanguageModelService as singleton
 builder.Services.AddSingleton<LanguageModelService>();
 
-// Register GameServerModule as singleton
-builder.Services.AddSingleton<GameServerModule>(sp =>
-{
-    var logger = sp.GetRequiredService<ILogger<GameServerModule>>();
-    var module = new GameServerModule();
-    // Initialize the module - pass null as manager for standalone operation
-    module.Initialize(null);
-    return module;
-});
+// GameServerModule registration removed - module has been separated from AI Server
+// If you need game server functionality, it should be deployed separately
 
-// Register AI-enhanced game server service
-builder.Services.AddSingleton<AIEnhancedGameServerService>();
+// AI-enhanced game server service removed - depends on separated GameServerModule
 
 var app = builder.Build();
 
@@ -57,7 +48,7 @@ var modelService = app.Services.GetRequiredService<LanguageModelService>();
 await modelService.InitializeAsync();
 
 Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
-Console.WriteLine("║    ASHATAIServer - AI Processing & Game Server          ║");
+Console.WriteLine("║    ASHATAIServer - AI Processing Server                 ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
 Console.WriteLine();
 Console.WriteLine($"Server started on port: 7077");
@@ -74,14 +65,7 @@ Console.WriteLine("    GET  /api/ai/status      - Get model status");
 Console.WriteLine("    POST /api/ai/models/scan - Scan for models");
 Console.WriteLine("    GET  /api/ai/health      - Health check");
 Console.WriteLine();
-Console.WriteLine("  Game Server:");
-Console.WriteLine("    GET  /api/gameserver/status              - Game server status");
-Console.WriteLine("    GET  /api/gameserver/capabilities        - Server capabilities");
-Console.WriteLine("    POST /api/gameserver/create              - Create new game");
-Console.WriteLine("    POST /api/gameserver/create-ai-enhanced  - Create game with AI");
-Console.WriteLine("    GET  /api/gameserver/projects            - List all projects");
-Console.WriteLine("    POST /api/gameserver/deploy/{id}         - Deploy game");
-Console.WriteLine("    GET  /api/gameserver/suggestions/{id}    - Get AI suggestions");
+Console.WriteLine("Note: Game Server endpoints have been separated into a standalone module.");
 Console.WriteLine();
 
 // Configure the HTTP request pipeline

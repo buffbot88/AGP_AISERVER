@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
-    <ProjectReference Include="..\AGP_GameServer\LegendaryGameSystem.csproj" />
   </ItemGroup>
 
 </Project>
