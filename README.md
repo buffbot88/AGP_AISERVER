@@ -57,24 +57,18 @@ Notes & Next steps
 - For embedding editor features, use AvalonEdit or Monaco (via WebView2).
 - For launching games with DirectX11/OpenGL, the client launches the downloaded executable as a separate process.
 
-  Current API Enpoints for gameserver;
+## Current API Endpoints
 
-  Available Endpoints:
-  Authentication:
-    POST /api/auth/login     - User login
-    POST /api/auth/register  - User registration
+### Available Endpoints:
 
-  AI Services:
-    POST /api/ai/process     - Process AI prompts
-    GET  /api/ai/status      - Get model status
-    POST /api/ai/models/scan - Scan for models
-    GET  /api/ai/health      - Health check
+**Authentication:**
+- POST /api/auth/login     - User login
+- POST /api/auth/register  - User registration
 
-  Game Server:
-    GET  /api/gameserver/status              - Game server status
-    GET  /api/gameserver/capabilities        - Server capabilities
-    POST /api/gameserver/create              - Create new game
-    POST /api/gameserver/create-ai-enhanced  - Create game with AI
-    GET  /api/gameserver/projects            - List all projects
-    POST /api/gameserver/deploy/{id}         - Deploy game
-    GET  /api/gameserver/suggestions/{id}    - Get AI suggestions
+**AI Services:**
+- POST /api/ai/process     - Process AI prompts
+- GET  /api/ai/status      - Get model status
+- POST /api/ai/models/scan - Scan for models
+- GET  /api/ai/health      - Health check
+
+**Note:** Game Server endpoints have been separated into a standalone module.
