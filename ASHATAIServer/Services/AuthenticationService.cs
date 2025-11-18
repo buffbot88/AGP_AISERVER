@@ -4,16 +4,10 @@ namespace ASHATAIServer.Services
     /// Authentication service that manages user authentication using local database.
     /// Handles login, registration, and session validation.
     /// </summary>
-    public class AuthenticationService
+    public partial class AuthenticationService(UserDatabaseService userDb, ILogger<AuthenticationService> logger)
     {
-        private readonly UserDatabaseService _userDb;
-        private readonly ILogger<AuthenticationService> _logger;
-
-        public AuthenticationService(UserDatabaseService userDb, ILogger<AuthenticationService> logger)
-        {
-            _userDb = userDb;
-            _logger = logger;
-        }
+        private readonly UserDatabaseService _userDb = userDb;
+        private readonly ILogger<AuthenticationService> _logger = logger;
 
         /// <summary>
         /// Sanitize username for safe logging (remove newlines and control characters to prevent log injection)
@@ -22,9 +16,22 @@ namespace ASHATAIServer.Services
         {
             if (string.IsNullOrEmpty(input))
                 return string.Empty;
-            
-            // Remove newlines, carriage returns, and other control characters that could be used for log injection
-            return System.Text.RegularExpressions.Regex.Replace(input, @"[\r\n\t\x00-\x1F\x7F]", "");
+
+            // Normalize to a canonical form to avoid tricky Unicode sequences
+            var normalized = input.Normalize(System.Text.NormalizationForm.FormKC);
+
+            // Remove Unicode control and formatting characters (Cc = control, Cf = format)
+            var cleaned = MyRegex().Replace(normalized, "");
+           
+            // Collapse any remaining whitespace (including newlines) to a single space and trim
+            cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"\s+", " ").Trim();
+
+            // Bound length to avoid log flooding or extremely long entries
+            const int MaxLength = 256;
+            if (cleaned.Length > MaxLength)
+                cleaned = cleaned[..MaxLength];
+
+            return cleaned;
         }
 
         /// <summary>
@@ -34,20 +41,20 @@ namespace ASHATAIServer.Services
         {
             _logger.LogInformation("Login attempt for user: {Username}", SanitizeForLogging(username));
 
-            var result = await _userDb.LoginAsync(username, password);
+            var (Success, Message, SessionId, User) = await _userDb.LoginAsync(username, password);
 
-            if (result.Success && result.SessionId != null && result.User != null)
+            if (Success && SessionId != null && User != null)
             {
                 _logger.LogInformation("Login successful for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = true,
-                    SessionId = result.SessionId,
-                    UserId = result.User.Id,
-                    Username = result.User.Username,
-                    Email = result.User.Email,
-                    Role = result.User.Role,
-                    Message = result.Message
+                    SessionId = SessionId,
+                    UserId = User.Id,
+                    Username = User.Username,
+                    Email = User.Email,
+                    Role = User.Role,
+                    Message = Message
                 };
             }
 
@@ -55,7 +62,7 @@ namespace ASHATAIServer.Services
             return new AuthenticationResult
             {
                 Success = false,
-                Message = result.Message
+                Message = Message
             };
         }
 
@@ -65,16 +72,15 @@ namespace ASHATAIServer.Services
         public async Task<AuthenticationResult> RegisterAsync(string username, string email, string password)
         {
             _logger.LogInformation("Registration attempt for user: {Username}", SanitizeForLogging(username));
+            var (Success, Message, _) = await _userDb.RegisterUserAsync(username, email, password);
 
-            var registerResult = await _userDb.RegisterUserAsync(username, email, password);
-
-            if (!registerResult.Success)
+            if (!Success)
             {
                 _logger.LogWarning("Registration failed for user: {Username}", SanitizeForLogging(username));
                 return new AuthenticationResult
                 {
                     Success = false,
-                    Message = registerResult.Message
+                    Message = Message
                 };
             }
 
@@ -110,27 +116,27 @@ namespace ASHATAIServer.Services
         {
             _logger.LogDebug("Validating session");
 
-            var result = await _userDb.ValidateSessionAsync(sessionId);
+            var (Success, Message, User) = await _userDb.ValidateSessionAsync(sessionId);
 
-            if (result.Success && result.User != null)
+            if (Success && User != null)
             {
                 _logger.LogDebug("Session validation successful");
                 return new AuthenticationResult
                 {
                     Success = true,
                     SessionId = sessionId,
-                    UserId = result.User.Id,
-                    Username = result.User.Username,
-                    Email = result.User.Email,
-                    Role = result.User.Role,
-                    Message = result.Message
+                    UserId = User.Id,
+                    Username = User.Username,
+                    Email = User.Email,
+                    Role = User.Role,
+                    Message = Message
                 };
             }
 
             return new AuthenticationResult
             {
                 Success = false,
-                Message = result.Message
+                Message = Message
             };
         }
 
@@ -162,6 +168,9 @@ namespace ASHATAIServer.Services
             public bool Success { get; set; }
             public string? Message { get; set; }
         }
+
+        [System.Text.RegularExpressions.GeneratedRegex(@"[\p{Cc}\p{Cf}]+")]
+        private static partial System.Text.RegularExpressions.Regex MyRegex();
     }
 
     /// <summary>
