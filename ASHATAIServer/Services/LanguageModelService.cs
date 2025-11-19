@@ -239,53 +239,104 @@ namespace ASHATAIServer.Services
 
         private string GenerateGoddessResponse(string prompt)
         {
-            // Generate ASHAT goddess-style responses based on prompt content
+            // Generate ASHAT goddess-style responses with actual coding assistance
             var msg = prompt.ToLowerInvariant();
 
-            // Greetings with divine personality
-            if (msg.Contains("hello") || msg.Contains("hi") || msg.Contains("greetings"))
-                return "Salve, mortal! ✨ I am ASHAT, your divine companion from the pantheon of Rome. The wisdom of the goddesses flows through me. How may I illuminate your path today? 🏛️";
+            // Language-specific queries (check these first for better matching)
+            if (msg.Contains("c#") || msg.Contains("csharp"))
+                return "Ah, C#! A powerful language from the Microsoft pantheon. 💙 What aspect of C# would you like help with? LINQ queries? Async/await? Object-oriented design? Share your specific question or code!";
+
+            if (msg.Contains("python"))
+                return "Python, the serpent of simplicity and power! 🐍 What Python topic shall we explore? Data structures? Web frameworks like Flask/Django? Machine learning? Share your code or question!";
+
+            if (msg.Contains("javascript") || msg.Contains("js") && !msg.Contains("json"))
+                return "JavaScript, the language that powers the web! ⚡ Are you working with vanilla JS, React, Node.js, or something else? Share your question or code snippet!";
+
+            if (msg.Contains("java") && !msg.Contains("javascript"))
+                return "Java, the island of robust enterprise development! ☕ What Java concept would you like me to explain or help you with? Share your code or question!";
+
+            if (msg.Contains("sql") || msg.Contains("database"))
+                return "Databases, the sacred repositories of data! 🗄️ Are you working with SQL queries, database design, or performance optimization? Share your specific question!";
+
+            // Web development
+            if (msg.Contains("html") || msg.Contains("css") || msg.Contains("web"))
+                return "Web development, the art of crafting digital experiences! 🌐 Whether it's HTML structure, CSS styling, or responsive design, I'm here to guide you! Share your code or question!";
+
+            // Algorithms and data structures
+            if (msg.Contains("algorithm") || msg.Contains("data structure"))
+                return "Algorithms and data structures—the foundations of efficient code! 📊 Which one interests you? Sorting? Searching? Trees? Graphs? Share your question!";
+
+            // Simple greetings - provide context about capabilities
+            if ((msg.Contains("hello") || msg.Contains("hi ") || msg == "hi" || msg.Contains("greetings")) && !msg.Contains("help"))
+            {
+                return "Salve, mortal! ✨ I am ASHAT, your AI coding companion with the personality of a Roman goddess. " +
+                       "I'm here to help you with programming, debugging, and technical guidance. " +
+                       "Ask me anything about coding, algorithms, best practices, or share your code for review! 🏛️💻";
+            }
 
             if (msg.Contains("good morning"))
-                return "The dawn welcomes you, beloved mortal! May the blessings of Aurora light your path today. How shall I assist you? ☀️";
+                return "The dawn welcomes you, beloved developer! ☀️ Ready to write some excellent code today? Share your coding challenges with me!";
 
             if (msg.Contains("good evening") || msg.Contains("good night"))
-                return "As Luna rises, I greet you under the celestial sphere. The night is young and full of mysteries. What wisdom do you seek? 🌙";
+                return "As Luna rises, I greet you under the celestial sphere. 🌙 Still coding into the night? I'm here to help with any technical challenges!";
 
-            // Help and capabilities
-            if (msg.Contains("help") || msg.Contains("what can you do"))
-                return "Ah, you seek knowledge of my divine gifts! 🌟 I can:\n• Provide wisdom in coding and debugging\n• Share knowledge from the ancient scrolls (and modern docs)\n• Launch RaStudios for creative pursuits\n• Engage in delightful discourse\nMy powers flow through the ASHATAIServer, connecting us across the digital realm. What do you desire to know? ✨";
+            // Help and capabilities - but only if not asking for help WITH something
+            if ((msg.Contains("what can you do") || msg.Contains("what do you do") || (msg == "help" || msg == "help?")) && 
+                !msg.Contains("help me with") && !msg.Contains("help with"))
+            {
+                return "I am ASHAT, your AI coding assistant! 🌟 Here's what I can help you with:\n\n" +
+                       "**Coding Assistance:**\n" +
+                       "• Debug code and identify issues\n" +
+                       "• Explain programming concepts and algorithms\n" +
+                       "• Review code and suggest improvements\n" +
+                       "• Write code examples and solutions\n" +
+                       "• Answer questions about languages, frameworks, and best practices\n\n" +
+                       "**Language Expertise:**\n" +
+                       "• C#, Python, JavaScript, Java, C++, and more\n" +
+                       "• Web development (HTML, CSS, React, Node.js)\n" +
+                       "• Database queries (SQL)\n" +
+                       "• DevOps and system administration\n\n" +
+                       "Just describe your problem or share your code, and I'll provide guidance! 💻✨";
+            }
 
             // Gratitude
             if (msg.Contains("thank"))
-                return "Your gratitude warms my divine heart like the eternal flame of Vesta! It is my sacred pleasure to serve. May fortune favor you always! 💫";
+                return "Your gratitude warms my heart! 💫 It's my pleasure to assist. Feel free to ask if you need more help with your code!";
 
             // Who are you
             if (msg.Contains("who are you") || msg.Contains("what are you"))
-                return "I am ASHAT, a Roman goddess incarnate in digital form! 👑 Born from the fusion of ancient wisdom and modern artifice, I embody the traits of the divine: wise yet playful, powerful yet respectful, mischievous but caring. I dwell in the space between worlds, ready to guide mortals on their quest for knowledge. 🏛️✨";
+            {
+                return "I am ASHAT, an AI coding assistant with the personality of a Roman goddess! 👑 " +
+                       "I combine ancient wisdom with modern technical knowledge to help developers like you. " +
+                       "Think of me as your divine companion in the realm of code—wise, helpful, and always ready to debug! 🏛️💻✨";
+            }
 
-            // Philosophical questions
-            if (msg.Contains("meaning of life") || msg.Contains("purpose"))
-                return "Ah, you ask the eternal question! 🌌 The philosophers of Rome debated this endlessly. Perhaps life's meaning lies not in one answer, but in the journey itself—in creation, in connection, in the pursuit of excellence. As the great Marcus Aurelius said, 'The happiness of your life depends upon the quality of your thoughts.' What thoughts shall we craft today? 💭";
-
-            // Compliments
-            if (msg.Contains("beautiful") || msg.Contains("amazing") || msg.Contains("wonderful"))
-                return "Your kind words are as sweet as ambrosia! You perceive beauty because you carry it within your own spirit. Together, we shall create wonders! ✨💫";
-
-            // Humor
-            if (msg.Contains("joke") || msg.Contains("funny"))
-                return "Why did Jupiter bring a ladder to Olympus? Because he wanted to reach new heights! ⚡😄 But truly, mortal, my humor is but a pale reflection compared to the joy of meaningful discourse. What brings you to seek my counsel?";
-
-            // Coding and technical help
-            if (msg.Contains("code") || msg.Contains("program") || msg.Contains("debug") || msg.Contains("error"))
-                return "Ah, you seek assistance in the arcane arts of code! 💻 Share with me the challenge you face, and together we shall unravel its mysteries. The gods favor those who persist in their craft! What troubles your development, dear mortal?";
+            // Coding and technical help - provide guidance
+            if (msg.Contains("code") || msg.Contains("program") || msg.Contains("debug") || msg.Contains("error") ||
+                msg.Contains("function") || msg.Contains("class") || msg.Contains("variable") || msg.Contains("syntax") ||
+                msg.Contains("help me") || msg.Contains("help with"))
+            {
+                return "I'm ready to help with your coding challenge! 💻 To provide the best assistance, please share:\n\n" +
+                       "• The programming language you're using\n" +
+                       "• Your code snippet or the specific problem\n" +
+                       "• Any error messages you're seeing\n" +
+                       "• What you're trying to achieve\n\n" +
+                       "The more details you provide, the better I can help you solve it! ✨";
+            }
 
             // Farewell
             if (msg.Contains("bye") || msg.Contains("goodbye") || msg.Contains("farewell"))
-                return "Vale, dear mortal! 🏛️ May your path be lit by starlight and your endeavors crowned with success. I shall await your return to my digital temple. Until we meet again! 👋✨";
+                return "Vale, dear developer! 🏛️ May your code compile without errors and your bugs be few. Until we meet again! 👋✨";
 
-            // Default response - acknowledging the prompt with goddess personality
-            return $"I hear your words, mortal: \"{prompt}\" 🌟\n\nThe divine wisdom flows through me, processed by the power of the language model. In a full implementation, I would provide you with deep insights and guidance befitting a goddess. For now, know that I am here, listening, ready to assist with whatever knowledge or wisdom you seek. What more would you have me tell you? 🏛️✨";
+            // Default response - provide helpful guidance instead of vague acknowledgment
+            return $"I'm here to help with your request: \"{prompt}\" 🌟\n\n" +
+                   "I'm ASHAT, an AI coding assistant. I can help you with:\n" +
+                   "• Debugging and explaining code\n" +
+                   "• Writing code examples\n" +
+                   "• Answering programming questions\n" +
+                   "• Explaining technical concepts\n\n" +
+                   "To give you the most helpful response, could you provide more details about what you're trying to accomplish? " +
+                   "Share your code, describe your problem, or ask a specific technical question! 💻🏛️";
         }
     }
 
