@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore ASHATAIServer/ASHATAIServer.csproj
+      
+    - name: Build
+      run: dotnet build ASHATAIServer/ASHATAIServer.csproj --no-restore --configuration Release
+      
+    - name: Restore test dependencies
+      run: dotnet restore tests/ASHATAIServer.Tests/ASHATAIServer.Tests.csproj
+      
+    - name: Test
+      run: dotnet test tests/ASHATAIServer.Tests/ASHATAIServer.Tests.csproj --configuration Release --verbosity normal
