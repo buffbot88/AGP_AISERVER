@@ -37,10 +37,11 @@
 
 **Note:** Game Server functionality has been separated into a standalone module.
 
-**Implementation Status:** ✅ Phase 1, 2 & 3 Complete
+**Implementation Status:** ✅ Phase 1, 2, 3 & 4 Complete
 - ✅ **Phase 1**: Pluggable inference runtime with IModelRuntime interface
 - ✅ **Phase 2**: Streaming support (SSE) and project generation endpoint
 - ✅ **Phase 3**: Security hardening with Argon2id, API keys, and rate limiting
+- ✅ **Phase 4**: Docker packaging, publish scripts, and deployment documentation
 
 ---
 
@@ -79,6 +80,53 @@ cp /path/to/your/model.gguf models/
 ```
 
 The server automatically scans and loads `.gguf` files on startup.
+
+### 🐳 Docker Deployment
+
+```bash
+# Build the Docker image
+docker build -t ashataiserver:latest .
+
+# Create directories for persistent data
+mkdir -p models data
+
+# Run with Docker
+docker run -d \
+  --name ashataiserver \
+  -p 7077:7077 \
+  -v $(pwd)/models:/app/models:ro \
+  -v $(pwd)/data:/app/data \
+  ashataiserver:latest
+
+# Or use Docker Compose
+docker-compose up -d
+```
+
+**Docker Features:**
+- Multi-stage build for minimal image size
+- Non-root user for security
+- Health checks configured
+- Volume support for models and database
+- See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for advanced configurations
+
+### 📦 Pre-built Binaries
+
+```bash
+# Windows (PowerShell)
+.\scripts\publish.ps1
+# Output: publish\windows-x64\ASHATAIServer.exe
+
+# Linux/macOS (Bash)
+chmod +x scripts/publish.sh
+./scripts/publish.sh
+# Output: publish/linux-x64/ASHATAIServer
+```
+
+**Binary Features:**
+- Self-contained (includes .NET runtime)
+- Single-file executable option
+- Cross-platform (Windows x64/ARM64, Linux x64/ARM64/ARM)
+- See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for installation guides
 
 ---
 
@@ -960,11 +1008,23 @@ Available Endpoints:
 - ✅ Session-based authentication
 - ✅ Project generation with security
 
-### Planned Features (Phase 4+)
+### Completed Features (Phase 4)
 
-- [ ] Docker packaging and deployment guides
-- [ ] Multi-platform publish scripts
+- ✅ Production-ready Dockerfile with multi-stage build
+- ✅ Docker Compose configurations (basic and advanced)
+- ✅ Publish scripts for Windows and Linux (single-file, self-contained)
+- ✅ Windows installation helper script
+- ✅ Comprehensive deployment documentation
+- ✅ Environment variable configuration
+- ✅ systemd service configuration
+- ✅ Nginx reverse proxy examples
+
+### Planned Features (Phase 5+)
+
 - [ ] Integration with real llama.cpp runtime
+- [ ] WinForms client application
+- [ ] CLI tool for project generation
+- [ ] Project templates
 - [ ] Model fine-tuning capabilities
 - [ ] Multi-model ensemble processing
 - [ ] GPU acceleration support (CUDA/Metal)
