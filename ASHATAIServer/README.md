@@ -134,6 +134,78 @@ Content-Type: application/json
 }
 ```
 
+#### Process AI Prompt (Streaming)
+```http
+POST /api/ai/process/stream
+Content-Type: application/json
+
+{
+  "prompt": "Write a function to calculate fibonacci",
+  "modelName": "llama-2-7b.gguf"  // Optional
+}
+```
+
+**Response:** Server-Sent Events (SSE) stream
+```
+data: Generated
+data: response
+data: text
+data: token
+data: by
+data: token...
+data: [DONE]
+```
+
+The streaming endpoint returns tokens as they are generated using Server-Sent Events (SSE) format. Each token is sent as a `data:` event. The stream ends with a `data: [DONE]` event.
+
+#### Generate Project
+```http
+POST /api/ai/generate-project
+Content-Type: application/json
+
+{
+  "projectDescription": "Create a simple C# console calculator",
+  "projectType": "console",
+  "language": "csharp",
+  "modelName": "llama-2-7b.gguf",  // Optional
+  "options": {
+    "includeComments": true,
+    "includeTests": false,
+    "includeReadme": true,
+    "maxFiles": 50,
+    "maxFileSizeBytes": 1048576
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "files": {
+    "Program.cs": "using System;\n\nclass Program\n{\n    static void Main()\n    {\n        Console.WriteLine(\"Hello World\");\n    }\n}",
+    "README.md": "# Calculator Project\n\nA simple console calculator.",
+    "Calculator.csproj": "<Project Sdk=\"Microsoft.NET.Sdk\">...</Project>"
+  },
+  "metadata": {
+    "modelUsed": "llama-2-7b.gguf",
+    "projectType": "console",
+    "language": "csharp",
+    "fileCount": 3,
+    "totalSizeBytes": 1024,
+    "generationTimeMs": 450,
+    "warnings": []
+  },
+  "error": null
+}
+```
+
+The `/api/ai/generate-project` endpoint generates complete projects with multiple files. It includes:
+- **File sanitization**: Only allows safe file extensions
+- **Size limits**: Configurable maximum file sizes
+- **Path validation**: Prevents directory traversal attacks
+- **Structured output**: Returns files as a dictionary of path -> content
+
 #### Scan for Models
 ```http
 POST /api/ai/models/scan

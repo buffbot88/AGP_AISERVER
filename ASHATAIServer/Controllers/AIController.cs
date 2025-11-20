@@ -35,6 +35,44 @@ namespace ASHATAIServer.Controllers
             return Ok(result);
         }
 
+        [HttpPost("process/stream")]
+        public async Task ProcessPromptStream([FromBody] PromptRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Prompt))
+            {
+                Response.StatusCode = 400;
+                await Response.WriteAsJsonAsync(new { error = "Prompt cannot be empty" });
+                return;
+            }
+
+            _logger.LogInformation("Received streaming prompt request from client");
+
+            // Set up SSE (Server-Sent Events) headers
+            Response.Headers.Append("Content-Type", "text/event-stream");
+            Response.Headers.Append("Cache-Control", "no-cache");
+            Response.Headers.Append("Connection", "keep-alive");
+
+            try
+            {
+                await foreach (var token in _modelService.StreamPromptAsync(request.Prompt, request.ModelName))
+                {
+                    // Send token as SSE event
+                    await Response.WriteAsync($"data: {token}\n\n");
+                    await Response.Body.FlushAsync();
+                }
+
+                // Send completion event
+                await Response.WriteAsync("data: [DONE]\n\n");
+                await Response.Body.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during streaming");
+                await Response.WriteAsync($"data: {{\"error\": \"{ex.Message}\"}}\n\n");
+                await Response.Body.FlushAsync();
+            }
+        }
+
         [HttpGet("status")]
         public IActionResult GetStatus()
         {

@@ -11,9 +11,11 @@
 
 ✨ **AI Language Model Processing**
 - Supports GGUF format model files for AI inference
+- Pluggable runtime architecture (MockRuntime, LlamaCppAdapter)
 - Automatic model discovery and loading
 - Self-healing capabilities for failed models
-- Built-in goddess personality responses
+- Token-level streaming responses (SSE)
+- Project generation with structured file output
 
 🔐 **User Authentication & Management**
 - Secure local user database (SQLite)
@@ -25,6 +27,8 @@
 - Comprehensive HTTP API
 - CORS enabled for cross-origin requests
 - OpenAPI/Swagger documentation in development mode
+- Server-Sent Events (SSE) for streaming
+- Project generation endpoint with file sanitization
 
 📊 **Monitoring & Health Checks**
 - Real-time model status
@@ -32,6 +36,12 @@
 - Comprehensive logging
 
 **Note:** Game Server functionality has been separated into a standalone module.
+
+**Implementation Status:** ✅ Phase 1 & Phase 2 Complete
+- ✅ Pluggable inference runtime with IModelRuntime interface
+- ✅ MockRuntime for testing, LlamaCppAdapter skeleton for production
+- ✅ Streaming support via Server-Sent Events
+- ✅ Project generation endpoint with file sanitization and security
 
 ---
 
@@ -289,7 +299,111 @@ Process an AI prompt using a loaded language model or built-in goddess personali
 ```
 
 **Built-in Personality:**
-When no models are loaded, the server uses a built-in "ASHAT Goddess" personality with contextual responses for greetings, help requests, coding questions, and more.
+When no models are loaded, the server uses MockRuntime with the built-in "ASHAT Goddess" personality that provides contextual responses for greetings, help requests, coding questions, and more.
+
+---
+
+### 5.1 Process AI Prompt (Streaming)
+
+**Endpoint:** `POST /api/ai/process/stream`
+
+Process an AI prompt with streaming response using Server-Sent Events (SSE).
+
+**Request Body:**
+```json
+{
+  "prompt": "Write a function to calculate fibonacci numbers",
+  "modelName": "llama-2-7b.gguf"
+}
+```
+
+**Response:** Server-Sent Events stream
+```
+data: Generated
+data: response
+data: token
+data: by
+data: token...
+data: [DONE]
+```
+
+**Usage:**
+The streaming endpoint returns tokens as they are generated using Server-Sent Events (SSE) format. Each token is sent as a `data:` event. The stream ends with a `data: [DONE]` event.
+
+**Client Example (JavaScript):**
+```javascript
+const eventSource = new EventSource('http://localhost:7077/api/ai/process/stream');
+eventSource.onmessage = (event) => {
+  if (event.data === '[DONE]') {
+    eventSource.close();
+  } else {
+    console.log(event.data);
+  }
+};
+```
+
+---
+
+### 5.2 Generate Project
+
+**Endpoint:** `POST /api/ai/generate-project`
+
+Generate a complete project with multiple files based on a description.
+
+**Request Body:**
+```json
+{
+  "projectDescription": "Create a simple C# console calculator that can add, subtract, multiply, and divide",
+  "projectType": "console",
+  "language": "csharp",
+  "modelName": "llama-2-7b.gguf",
+  "options": {
+    "includeComments": true,
+    "includeTests": false,
+    "includeReadme": true,
+    "maxFiles": 50,
+    "maxFileSizeBytes": 1048576
+  }
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "files": {
+    "Program.cs": "using System;\n\nclass Program\n{\n    static void Main()\n    {\n        Console.WriteLine(\"Calculator\");\n    }\n}",
+    "Calculator.cs": "public class Calculator\n{\n    public int Add(int a, int b) => a + b;\n}",
+    "README.md": "# Calculator Project\n\nA simple console calculator.",
+    "Calculator.csproj": "<Project Sdk=\"Microsoft.NET.Sdk\">...</Project>"
+  },
+  "metadata": {
+    "modelUsed": "llama-2-7b.gguf",
+    "projectType": "console",
+    "language": "csharp",
+    "fileCount": 4,
+    "totalSizeBytes": 2048,
+    "generationTimeMs": 450,
+    "warnings": []
+  },
+  "error": null
+}
+```
+
+**Security Features:**
+- **File Extension Whitelist**: Only allows safe file extensions (.cs, .py, .js, .md, etc.)
+- **Size Limits**: Configurable maximum file sizes (default 1MB per file)
+- **Path Sanitization**: Removes directory traversal attempts (../, ~, etc.)
+- **Content Sanitization**: Removes null bytes and other potentially harmful content
+- **File Count Limit**: Maximum number of files to prevent abuse (default 50)
+
+**Error Response (400 Bad Request):**
+```json
+{
+  "success": false,
+  "error": "Project description is required"
+}
+```
 
 ---
 
@@ -724,10 +838,14 @@ Contributions are welcome! Please:
 **ASHATAIServer** is a production-ready AI processing server with:
 
 - ✅ **Port:** 7077
-- ✅ **8 REST API Endpoints** (3 auth, 1 user, 4 AI)
+- ✅ **10 REST API Endpoints** (3 auth, 1 user, 6 AI)
 - ✅ **SQLite Database** for user management
 - ✅ **GGUF Model Support** with automatic loading
-- ✅ **Built-in AI Personality** (ASHAT Goddess mode)
+- ✅ **Pluggable Runtime Architecture** (IModelRuntime interface)
+- ✅ **MockRuntime** for testing and fallback mode
+- ✅ **LlamaCppAdapter** skeleton for production inference
+- ✅ **Streaming Support** via Server-Sent Events (SSE)
+- ✅ **Project Generation** with file sanitization
 - ✅ **Session-based Authentication**
 - ✅ **Comprehensive Logging**
 - ✅ **CORS Enabled** for cross-origin requests
