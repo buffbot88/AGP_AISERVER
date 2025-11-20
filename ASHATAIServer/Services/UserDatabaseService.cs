@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Konscious.Security.Cryptography;
 
 namespace ASHATAIServer.Services
 {
@@ -297,16 +298,69 @@ namespace ASHATAIServer.Services
 
         private static string HashPassword(string password)
         {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(password);
-            var hash = sha256.ComputeHash(bytes);
-            return Convert.ToBase64String(hash);
+            // Generate a cryptographically secure salt
+            byte[] salt = new byte[32]; // 256 bits
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+
+            // Hash the password with Argon2id
+            using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
+            {
+                Salt = salt,
+                DegreeOfParallelism = 8, // Number of threads
+                MemorySize = 65536, // 64 MB
+                Iterations = 4
+            };
+
+            byte[] hash = argon2.GetBytes(32); // 256-bit hash
+
+            // Combine salt and hash for storage: salt(32 bytes) + hash(32 bytes) = 64 bytes
+            byte[] combined = new byte[64];
+            Buffer.BlockCopy(salt, 0, combined, 0, 32);
+            Buffer.BlockCopy(hash, 0, combined, 32, 32);
+
+            return Convert.ToBase64String(combined);
         }
 
-        private static bool VerifyPassword(string password, string hash)
+        private static bool VerifyPassword(string password, string storedHash)
         {
-            var passwordHash = HashPassword(password);
-            return passwordHash == hash;
+            try
+            {
+                // Decode the stored hash
+                byte[] combined = Convert.FromBase64String(storedHash);
+                
+                if (combined.Length != 64)
+                {
+                    // Invalid hash format - might be old SHA256 hash
+                    return false;
+                }
+
+                // Extract salt and hash
+                byte[] salt = new byte[32];
+                byte[] hash = new byte[32];
+                Buffer.BlockCopy(combined, 0, salt, 0, 32);
+                Buffer.BlockCopy(combined, 32, hash, 0, 32);
+
+                // Hash the provided password with the same salt
+                using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
+                {
+                    Salt = salt,
+                    DegreeOfParallelism = 8,
+                    MemorySize = 65536,
+                    Iterations = 4
+                };
+
+                byte[] testHash = argon2.GetBytes(32);
+
+                // Compare hashes in constant time to prevent timing attacks
+                return CryptographicOperations.FixedTimeEquals(hash, testHash);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static string GenerateSessionId()

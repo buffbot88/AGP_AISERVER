@@ -37,11 +37,10 @@
 
 **Note:** Game Server functionality has been separated into a standalone module.
 
-**Implementation Status:** ✅ Phase 1 & Phase 2 Complete
-- ✅ Pluggable inference runtime with IModelRuntime interface
-- ✅ MockRuntime for testing, LlamaCppAdapter skeleton for production
-- ✅ Streaming support via Server-Sent Events
-- ✅ Project generation endpoint with file sanitization and security
+**Implementation Status:** ✅ Phase 1, 2 & 3 Complete
+- ✅ **Phase 1**: Pluggable inference runtime with IModelRuntime interface
+- ✅ **Phase 2**: Streaming support (SSE) and project generation endpoint
+- ✅ **Phase 3**: Security hardening with Argon2id, API keys, and rate limiting
 
 ---
 
@@ -221,9 +220,134 @@ Validate an existing session token.
 
 ---
 
+## Admin Endpoints
+
+All admin endpoints require an admin session token in the Authorization header.
+
+### 4. Create API Key
+
+**Endpoint:** `POST /api/admin/keys/create`
+
+Create a new API key for authentication.
+
+**Request Headers:**
+```
+Authorization: Bearer <admin-session-token>
+```
+
+**Request Body:**
+```json
+{
+  "name": "Production API Key",
+  "assignToUserId": 5,
+  "expiresAt": "2025-12-31T23:59:59Z",
+  "scopes": "ai:process,ai:generate"
+}
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "API key created successfully",
+  "apiKey": "agp_live_a1b2c3d4...",
+  "warning": "Save this API key securely. It will not be shown again."
+}
+```
+
+**⚠️ Important:** The API key is only shown once. Store it securely.
+
+---
+
+### 5. List API Keys
+
+**Endpoint:** `GET /api/admin/keys/list`
+
+List all API keys in the system.
+
+**Request Headers:**
+```
+Authorization: Bearer <admin-session-token>
+```
+
+**Query Parameters:**
+- `userId` (optional): Filter by user ID
+- `includeRevoked` (optional): Include revoked keys (default: false)
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "keys": [
+    {
+      "id": 1,
+      "name": "Production API Key",
+      "userId": 5,
+      "createdAt": "2025-11-20T00:00:00Z",
+      "expiresAt": "2025-12-31T23:59:59Z",
+      "lastUsedAt": "2025-11-20T12:00:00Z",
+      "isRevoked": false,
+      "scopes": "ai:process,ai:generate"
+    }
+  ]
+}
+```
+
+---
+
+### 6. Revoke API Key
+
+**Endpoint:** `POST /api/admin/keys/revoke/{keyId}`
+
+Revoke an API key to prevent further use.
+
+**Request Headers:**
+```
+Authorization: Bearer <admin-session-token>
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "API key revoked successfully"
+}
+```
+
+---
+
+### 7. System Health
+
+**Endpoint:** `GET /api/admin/health`
+
+Get system health and statistics.
+
+**Request Headers:**
+```
+Authorization: Bearer <admin-session-token>
+```
+
+**Success Response (200 OK):**
+```json
+{
+  "success": true,
+  "health": {
+    "status": "healthy",
+    "timestamp": "2025-11-20T12:00:00Z",
+    "apiKeys": {
+      "total": 10,
+      "active": 8,
+      "revoked": 2
+    }
+  }
+}
+```
+
+---
+
 ## User Endpoints
 
-### 4. Get Current User
+### 8. Get Current User
 
 **Endpoint:** `GET /api/user/me`
 
@@ -262,7 +386,7 @@ curl -H "Authorization: Bearer a1b2c3d4e5f6..." \
 
 ## AI Processing Endpoints
 
-### 5. Process AI Prompt
+### 9. Process AI Prompt
 
 **Endpoint:** `POST /api/ai/process`
 
@@ -303,7 +427,7 @@ When no models are loaded, the server uses MockRuntime with the built-in "ASHAT 
 
 ---
 
-### 5.1 Process AI Prompt (Streaming)
+### 9.1 Process AI Prompt (Streaming)
 
 **Endpoint:** `POST /api/ai/process/stream`
 
@@ -344,7 +468,7 @@ eventSource.onmessage = (event) => {
 
 ---
 
-### 5.2 Generate Project
+### 9.2 Generate Project
 
 **Endpoint:** `POST /api/ai/generate-project`
 
@@ -407,7 +531,7 @@ Generate a complete project with multiple files based on a description.
 
 ---
 
-### 6. Get Model Status
+### 10. Get Model Status
 
 **Endpoint:** `GET /api/ai/status`
 
@@ -438,7 +562,7 @@ The server validates each model by:
 
 ---
 
-### 7. Scan for Models
+### 11. Scan for Models
 
 **Endpoint:** `POST /api/ai/models/scan`
 
@@ -458,7 +582,7 @@ Useful when you add new model files to the models directory without restarting t
 
 ---
 
-### 8. Health Check
+### 12. Health Check
 
 **Endpoint:** `GET /api/ai/health`
 
@@ -637,30 +761,65 @@ cd publish
 
 ---
 
-## 🔐 Security Considerations
+## 🔐 Security Features
 
-### Current Security Features
+### ✅ Phase 3 Security Implementation
 
-✅ **Implemented:**
-- Password hashing (SHA256)
-- Session-based authentication
-- Token expiration (7 days)
+ASHATAIServer now includes production-ready security features:
+
+**Password Security:**
+- **Argon2id hashing** - Memory-hard algorithm (64MB, 4 iterations)
+- **Per-user salts** - Unique 32-byte cryptographic salt for each password
+- **Constant-time comparison** - Prevents timing attacks
+
+**API Key Authentication:**
+- **Secure key generation** - 256-bit entropy (`agp_live_<64 hex chars>`)
+- **SHA256 storage** - Keys hashed before database storage
+- **Expiration & Revocation** - Full lifecycle management
+- **Admin endpoints** - Create, list, and revoke keys
+- **Scope support** - Fine-grained access control (future use)
+- **Backward compatible** - Optional, disabled by default
+
+**Rate Limiting:**
+- **Per-IP tracking** - Limits by client IP address
+- **Per-API-key tracking** - Limits by authenticated API key
+- **Configurable limits** - Default: 60 requests/min, 1000 requests/hour
+- **Standard responses** - HTTP 429 with Retry-After header
+- **Rate limit headers** - X-RateLimit-* headers on all responses
+
+**HTTPS/TLS Support:**
+- **Optional HTTPS** - Configure via appsettings
+- **Certificate-based** - Standard .pfx certificate support
+- **Production-ready** - Works with Let's Encrypt, DigiCert, etc.
+
+**Additional Security:**
+- Session management (7-day expiration)
 - SQL injection prevention (parameterized queries)
 - Log injection prevention
-- Input validation
+- Input validation and sanitization
+- Path traversal protection
+
+### 📖 Documentation
+
+See **[docs/SECURITY.md](docs/SECURITY.md)** for:
+- Detailed security configuration
+- API key management guide
+- Rate limiting configuration
+- HTTPS setup instructions
+- Production deployment best practices
+- Threat model and mitigations
 
 ### Production Recommendations
 
-⚠️ **For production deployment:**
+For production deployment:
 
-1. **Use HTTPS:** Enable SSL/TLS encryption
-2. **Stronger Password Hashing:** Upgrade to bcrypt or Argon2
-3. **API Rate Limiting:** Prevent abuse and DDoS
-4. **CORS Restrictions:** Limit to specific origins instead of `AllowAnyOrigin()`
-5. **API Key Authentication:** Add additional authentication layer
-6. **Input Validation:** Enhanced validation for all endpoints
-7. **Firewall Rules:** Restrict access to trusted networks
-8. **Monitoring & Alerts:** Set up monitoring for suspicious activity
+1. ✅ **Password Hashing** - Already using Argon2id
+2. ✅ **Rate Limiting** - Already enabled (adjust limits as needed)
+3. ⚠️ **Enable HTTPS** - Configure TLS certificate
+4. ⚠️ **API Key Protection** - Add critical endpoints to ProtectedPaths
+5. ⚠️ **CORS Restrictions** - Limit to specific origins
+6. ⚠️ **Firewall Rules** - Restrict access to trusted networks
+7. ⚠️ **Monitoring** - Set up logging and alerting
 
 ---
 
@@ -793,15 +952,24 @@ Available Endpoints:
 
 ## 🚀 Roadmap & Future Enhancements
 
-### Planned Features
+### Completed Features (Phase 1-3)
 
-- [ ] Integration with llama.cpp for real AI inference
-- [ ] Streaming response support (SSE/WebSocket)
+- ✅ Integration with llama.cpp skeleton (LlamaCppAdapter)
+- ✅ Streaming response support (SSE)
+- ✅ Advanced security features (Argon2, API keys, rate limiting)
+- ✅ Session-based authentication
+- ✅ Project generation with security
+
+### Planned Features (Phase 4+)
+
+- [ ] Docker packaging and deployment guides
+- [ ] Multi-platform publish scripts
+- [ ] Integration with real llama.cpp runtime
 - [ ] Model fine-tuning capabilities
 - [ ] Multi-model ensemble processing
 - [ ] GPU acceleration support (CUDA/Metal)
 - [ ] Model caching and optimization
-- [ ] Advanced role-based permissions
+- [ ] Multi-factor authentication (MFA)
 - [ ] API usage analytics
 
 ---
@@ -837,20 +1005,26 @@ Contributions are welcome! Please:
 
 **ASHATAIServer** is a production-ready AI processing server with:
 
-- ✅ **Port:** 7077
-- ✅ **10 REST API Endpoints** (3 auth, 1 user, 6 AI)
-- ✅ **SQLite Database** for user management
+- ✅ **Port:** 7077 (HTTP), 7443 (HTTPS optional)
+- ✅ **14+ REST API Endpoints** (3 auth, 1 user, 4 admin, 6+ AI)
+- ✅ **SQLite Database** for user management and API keys
 - ✅ **GGUF Model Support** with automatic loading
 - ✅ **Pluggable Runtime Architecture** (IModelRuntime interface)
 - ✅ **MockRuntime** for testing and fallback mode
 - ✅ **LlamaCppAdapter** skeleton for production inference
 - ✅ **Streaming Support** via Server-Sent Events (SSE)
 - ✅ **Project Generation** with file sanitization
-- ✅ **Session-based Authentication**
-- ✅ **Comprehensive Logging**
+- ✅ **Phase 3 Security Features:**
+  - ✅ **Argon2id** password hashing with per-user salts
+  - ✅ **API Key Authentication** with admin management
+  - ✅ **Rate Limiting** (60/min, 1000/hr)
+  - ✅ **HTTPS/TLS Support** (optional)
+  - ✅ **Session Management** (7-day expiration)
+- ✅ **Comprehensive Logging & Documentation**
 - ✅ **CORS Enabled** for cross-origin requests
 
 **Quick Start:** `cd ASHATAIServer && dotnet run`
+**Security Docs:** See [docs/SECURITY.md](docs/SECURITY.md)
 
 ---
 
