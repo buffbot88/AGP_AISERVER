@@ -1,4 +1,5 @@
 using ASHATAIServer.Services;
+using ASHATAIServer.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,9 @@ builder.Services.AddSingleton<UserDatabaseService>();
 
 // Register Authentication Service
 builder.Services.AddSingleton<AuthenticationService>();
+
+// Register Model Runtime (MockRuntime for now, can be swapped with LlamaCppAdapter)
+builder.Services.AddSingleton<IModelRuntime, MockRuntime>();
 
 // Register LanguageModelService as singleton
 builder.Services.AddSingleton<LanguageModelService>();
