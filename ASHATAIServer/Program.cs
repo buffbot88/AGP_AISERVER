@@ -1,4 +1,5 @@
 using ASHATAIServer.Services;
+using ASHATAIServer.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,9 @@ builder.Services.AddSingleton<UserDatabaseService>();
 // Register Authentication Service
 builder.Services.AddSingleton<AuthenticationService>();
 
+// Register Model Runtime (MockRuntime for now, can be swapped with LlamaCppAdapter)
+builder.Services.AddSingleton<IModelRuntime, MockRuntime>();
+
 // Register LanguageModelService as singleton
 builder.Services.AddSingleton<LanguageModelService>();
 
@@ -60,11 +64,14 @@ Console.WriteLine("    POST /api/auth/login     - User login");
 Console.WriteLine("    POST /api/auth/register  - User registration");
 Console.WriteLine();
 Console.WriteLine("  AI Services:");
-Console.WriteLine("    POST /api/ai/process     - Process AI prompts");
-Console.WriteLine("    GET  /api/ai/status      - Get model status");
-Console.WriteLine("    POST /api/ai/models/scan - Scan for models");
-Console.WriteLine("    GET  /api/ai/health      - Health check");
+Console.WriteLine("    POST /api/ai/process            - Process AI prompts");
+Console.WriteLine("    POST /api/ai/process/stream     - Process AI prompts (streaming SSE)");
+Console.WriteLine("    POST /api/ai/generate-project   - Generate complete projects");
+Console.WriteLine("    GET  /api/ai/status             - Get model status");
+Console.WriteLine("    POST /api/ai/models/scan        - Scan for models");
+Console.WriteLine("    GET  /api/ai/health             - Health check");
 Console.WriteLine();
+Console.WriteLine("Runtime: " + (modelService.GetStatus().CurrentlyLoadedModel ?? "MockRuntime (fallback mode)"));
 Console.WriteLine("Note: Game Server endpoints have been separated into a standalone module.");
 Console.WriteLine();
 
