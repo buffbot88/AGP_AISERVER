@@ -1,0 +1,57 @@
+# .dockerignore - Files to exclude from Docker build context
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Build outputs
+**/bin/
+**/obj/
+**/publish/
+
+# IDE and editor files
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Test files
+**/tests/
+**/*Tests/
+**/*.Tests/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Node modules (if any)
+node_modules/
+
+# Models directory (should be mounted as volume)
+models/
+**/models/
+
+# Development scripts
+start.bat
+start.sh
+
+# CI/CD files
+.github/
