@@ -46,8 +46,15 @@ namespace ASHATAIServer.Middleware
                 return;
             }
 
-            // Check if path requires API key (if protected paths are configured)
-            if (_protectedPaths.Count > 0 && !_protectedPaths.Any(p => path.StartsWith(p.ToLowerInvariant())))
+            // If no protected paths are configured, skip API key validation (backward compatible)
+            if (_protectedPaths.Count == 0)
+            {
+                await _next(context);
+                return;
+            }
+
+            // Check if path requires API key (only if it's in the protected paths list)
+            if (!_protectedPaths.Any(p => path.StartsWith(p.ToLowerInvariant())))
             {
                 await _next(context);
                 return;
