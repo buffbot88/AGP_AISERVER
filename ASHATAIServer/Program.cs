@@ -1,12 +1,31 @@
 using ASHATAIServer.Services;
 using ASHATAIServer.Runtime;
+using ASHATAIServer.Services.Auth;
+using ASHATAIServer.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure to listen on port 7077
+// Configure to listen on port 7077 (HTTP) and optionally 7443 (HTTPS)
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(7077);
+    options.ListenAnyIP(7077); // HTTP
+    
+    // Configure HTTPS if enabled
+    var httpsEnabled = builder.Configuration.GetValue<bool>("Https:Enabled");
+    if (httpsEnabled)
+    {
+        var httpsPort = builder.Configuration.GetValue<int>("Https:Port", 7443);
+        var certPath = builder.Configuration.GetValue<string>("Https:CertificatePath");
+        var certPassword = builder.Configuration.GetValue<string>("Https:CertificatePassword");
+        
+        if (!string.IsNullOrEmpty(certPath) && File.Exists(certPath))
+        {
+            options.ListenAnyIP(httpsPort, listenOptions =>
+            {
+                listenOptions.UseHttps(certPath, certPassword);
+            });
+        }
+    }
 });
 
 // Add services to the container
@@ -34,6 +53,9 @@ builder.Services.AddSingleton<UserDatabaseService>();
 // Register Authentication Service
 builder.Services.AddSingleton<AuthenticationService>();
 
+// Register API Key Service
+builder.Services.AddSingleton<ApiKeyService>();
+
 // Register Model Runtime (MockRuntime for now, can be swapped with LlamaCppAdapter)
 builder.Services.AddSingleton<IModelRuntime, MockRuntime>();
 
@@ -57,11 +79,30 @@ Console.WriteLine("╚═══════════════════�
 Console.WriteLine();
 Console.WriteLine($"Server started on port: 7077");
 Console.WriteLine($"Server URL: http://localhost:7077");
+var httpsEnabled = app.Configuration.GetValue<bool>("Https:Enabled");
+if (httpsEnabled)
+{
+    var httpsPort = app.Configuration.GetValue<int>("Https:Port", 7443);
+    Console.WriteLine($"HTTPS URL: https://localhost:{httpsPort}");
+}
+Console.WriteLine();
+Console.WriteLine("Security Features:");
+Console.WriteLine("  ✓ Argon2id password hashing with per-user salts");
+Console.WriteLine("  ✓ API key authentication middleware");
+Console.WriteLine("  ✓ Rate limiting (60/min, 1000/hr by default)");
+var rateLimitEnabled = app.Configuration.GetValue<bool>("RateLimit:Enabled", true);
+Console.WriteLine($"  ✓ Rate limiting: {(rateLimitEnabled ? "Enabled" : "Disabled")}");
 Console.WriteLine();
 Console.WriteLine("Available Endpoints:");
 Console.WriteLine("  Authentication:");
 Console.WriteLine("    POST /api/auth/login     - User login");
 Console.WriteLine("    POST /api/auth/register  - User registration");
+Console.WriteLine();
+Console.WriteLine("  Admin (requires admin session):");
+Console.WriteLine("    POST /api/admin/keys/create       - Create API key");
+Console.WriteLine("    GET  /api/admin/keys/list         - List API keys");
+Console.WriteLine("    POST /api/admin/keys/revoke/{id}  - Revoke API key");
+Console.WriteLine("    GET  /api/admin/health            - System health");
 Console.WriteLine();
 Console.WriteLine("  AI Services:");
 Console.WriteLine("    POST /api/ai/process            - Process AI prompts");
@@ -82,6 +123,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+// Add rate limiting middleware
+app.UseRateLimiting();
+
+// Add API key authentication middleware
+app.UseApiKeyAuthentication();
+
 app.MapControllers();
 
 app.Run();
