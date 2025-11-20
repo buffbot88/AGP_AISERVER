@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  ashataiserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ashataiserver:latest
+    container_name: ashataiserver
+    ports:
+      - "7077:7077"
+    volumes:
+      # Mount directory for GGUF model files
+      - ./models:/app/models:ro
+      # Mount directory for persistent database and data
+      - ./data:/app/data
+    environment:
+      # Server configuration
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:7077
+      
+      # Model and database paths
+      - ModelsDirectory=/app/models
+      - Database__Path=/app/data/users.db
+      
+      # Optional: Enable HTTPS (requires certificate)
+      # - ASPNETCORE_URLS=https://+:7443;http://+:7077
+      # - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certs/certificate.pfx
+      # - ASPNETCORE_Kestrel__Certificates__Default__Password=YourCertPassword
+      
+      # Optional: Rate limiting configuration
+      # - RateLimit__RequestsPerMinute=60
+      # - RateLimit__RequestsPerHour=1000
+      
+      # Optional: Logging configuration
+      # - Logging__LogLevel__Default=Information
+      # - Logging__LogLevel__Microsoft.AspNetCore=Warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7077/api/ai/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - ashat-network
+
+networks:
+  ashat-network:
+    driver: bridge
