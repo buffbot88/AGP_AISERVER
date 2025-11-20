@@ -1,0 +1,264 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Restore dependencies
+      run: |
+        dotnet restore ASHATAIServer/ASHATAIServer.csproj
+        dotnet restore tests/ASHATAIServer.Tests/ASHATAIServer.Tests.csproj
+        
+    - name: Build
+      run: dotnet build ASHATAIServer/ASHATAIServer.csproj --no-restore --configuration Release
+      
+    - name: Test
+      run: dotnet test tests/ASHATAIServer.Tests/ASHATAIServer.Tests.csproj --configuration Release --verbosity normal --no-build --no-restore
+      
+    - name: Integration Tests
+      run: |
+        if [ -d "tests/integration" ]; then
+          dotnet test tests/integration --configuration Release --verbosity normal
+        else
+          echo "No integration tests found, skipping..."
+        fi
+
+  publish-artifacts:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [win-x64, win-arm64, linux-x64, linux-arm64, linux-arm]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Publish ${{ matrix.runtime }}
+      run: |
+        dotnet publish ASHATAIServer/ASHATAIServer.csproj \
+          -c Release \
+          -r ${{ matrix.runtime }} \
+          --self-contained true \
+          -p:PublishSingleFile=true \
+          -p:PublishTrimmed=true \
+          -o ./publish/${{ matrix.runtime }}
+    
+    - name: Create archive
+      run: |
+        cd publish/${{ matrix.runtime }}
+        if [[ "${{ matrix.runtime }}" == win-* ]]; then
+          zip -r ../ASHATAIServer-${{ matrix.runtime }}.zip .
+        else
+          tar -czf ../ASHATAIServer-${{ matrix.runtime }}.tar.gz .
+        fi
+        cd ../..
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ASHATAIServer-${{ matrix.runtime }}
+        path: |
+          publish/ASHATAIServer-${{ matrix.runtime }}.zip
+          publish/ASHATAIServer-${{ matrix.runtime }}.tar.gz
+        if-no-files-found: ignore
+
+  build-docker:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Docker Hub
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+      continue-on-error: true
+      
+    - name: Extract version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: ${{ github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != '' }}
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/ashataiserver:latest
+          ${{ secrets.DOCKER_USERNAME }}/ashataiserver:${{ steps.version.outputs.VERSION }}
+        platforms: linux/amd64,linux/arm64
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+      continue-on-error: true
+    
+    - name: Build Docker image (local)
+      if: ${{ secrets.DOCKER_USERNAME == '' || github.event_name == 'pull_request' }}
+      run: docker build -t ashataiserver:latest .
+
+  create-release:
+    needs: [publish-artifacts, build-docker]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+        
+    - name: Extract version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          echo "TAG=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release Notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        # ASHATAIServer ${{ steps.version.outputs.VERSION }}
+        
+        ## 🚀 Features
+        
+        - AI Processing Server with pluggable runtime architecture
+        - REST API for project generation and AI processing
+        - Streaming support via Server-Sent Events (SSE)
+        - Security features (Argon2id, API keys, rate limiting)
+        - Docker support with multi-architecture images
+        - Client tooling (CLI, WinForms)
+        - Project templates (Console, WinForms, Web API)
+        
+        ## 📦 Downloads
+        
+        ### Binaries
+        
+        Download the appropriate binary for your platform:
+        
+        - **Windows x64**: ASHATAIServer-win-x64.zip
+        - **Windows ARM64**: ASHATAIServer-win-arm64.zip
+        - **Linux x64**: ASHATAIServer-linux-x64.tar.gz
+        - **Linux ARM64**: ASHATAIServer-linux-arm64.tar.gz
+        - **Linux ARM**: ASHATAIServer-linux-arm.tar.gz
+        
+        ### Docker
+        
+        ```bash
+        docker pull ashataiserver:${{ steps.version.outputs.VERSION }}
+        docker pull ashataiserver:latest
+        ```
+        
+        ## 📖 Documentation
+        
+        - [README.md](README.md) - Getting started
+        - [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Deployment guide
+        - [docs/SECURITY.md](docs/SECURITY.md) - Security features
+        - [docs/CLIENTS.md](docs/CLIENTS.md) - Client tooling
+        
+        ## ⚙️ Installation
+        
+        ### Windows
+        
+        1. Download ASHATAIServer-win-x64.zip
+        2. Extract to desired location
+        3. Run ASHATAIServer.exe
+        
+        ### Linux
+        
+        ```bash
+        # Download and extract
+        wget https://github.com/buffbot88/AGP_AISERVER/releases/download/${{ steps.version.outputs.TAG }}/ASHATAIServer-linux-x64.tar.gz
+        tar -xzf ASHATAIServer-linux-x64.tar.gz
+        
+        # Make executable
+        chmod +x ASHATAIServer
+        
+        # Run
+        ./ASHATAIServer
+        ```
+        
+        ### Docker
+        
+        ```bash
+        docker run -d -p 7077:7077 ashataiserver:${{ steps.version.outputs.VERSION }}
+        ```
+        
+        ## 🔐 Security
+        
+        This release includes:
+        - Argon2id password hashing
+        - API key authentication
+        - Rate limiting (60/min, 1000/hr)
+        - Optional HTTPS/TLS support
+        
+        See [docs/SECURITY.md](docs/SECURITY.md) for configuration details.
+        
+        ## 📝 Changelog
+        
+        See [PHASES.md](PHASES.md) for implementation details.
+        EOF
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.TAG }}
+        name: Release ${{ steps.version.outputs.VERSION }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          artifacts/**/*.zip
+          artifacts/**/*.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
